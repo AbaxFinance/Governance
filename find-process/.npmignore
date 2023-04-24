@@ -1,0 +1,16 @@
+*.log
+test/
+docs/
+example/
+examples/
+coverage/
+node_modules/
+workbench/
+.npmignore
+.editorconfig
+.travis.yml
+.jshintrc
+.jshintignore
+
+
+.justconf

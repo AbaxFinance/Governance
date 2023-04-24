@@ -1,0 +1,58 @@
+[
+  {
+    "name": "DAI",
+    "decimals": 6,
+    "feeD6": 10,
+    "flashLoanFeeE6": 1000,
+    "stableBaseRate": 50000000000,
+    "collateralCoefficient": 0.97,
+    "borrowCoefficient": 1.03,
+    "maximalSupply":null,
+    "maximalDebt":null,
+    "minimalCollateral": 2000000,
+    "minimalDebt": 1000000,
+    "penalty": 0.015
+  },
+  {
+    "name": "USDC",
+    "decimals": 6,
+    "feeD6": 10,
+    "flashLoanFeeE6": 1000,
+    "stableBaseRate": 50000000000,
+    "collateralCoefficient": 0.98,
+    "maximalSupply":null,
+    "maximalDebt":null,
+    "borrowCoefficient": 1.02,
+    "minimalCollateral": 2000,
+    "minimalDebt": 1000,
+    "penalty": 0.01
+  },
+  {
+    "name": "WETH",
+    "decimals": 18,
+    "feeD6": 10,
+    "flashLoanFeeE6": 1000,
+    "stableBaseRate": 50000000000,
+    "collateralCoefficient": 0.8,
+    "maximalSupply":null,
+    "maximalDebt":null,
+    "borrowCoefficient": 1.2,
+    "minimalCollateral": 2000,
+    "minimalDebt": 1000,
+    "penalty": 0.1
+  },
+  {
+    "name": "LINK",
+    "decimals": 18,
+    "feeD6": 10,
+    "flashLoanFeeE6": 1000,
+    "stableBaseRate": null,
+    "collateralCoefficient": 0.7,
+    "borrowCoefficient": 1.3,
+    "maximalSupply":"1000000000000000000000000000",
+    "maximalDebt":"1000000000000000000000000000",
+    "minimalCollateral": 2000,
+    "minimalDebt": 1000,
+    "penalty": 0.15
+  }
+]

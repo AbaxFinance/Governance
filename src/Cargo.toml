@@ -1,0 +1,41 @@
+[workspace]
+members = [
+    "contracts/governance_token",
+    "contracts/governor",
+    "contracts/staker",
+    "contracts/block_timestamp_provider",
+    "contracts/psp22_mintable",
+    "contracts/hasher"
+]
+
+[package]
+name = "abax_governance"
+version = "0.1.0"
+authors = ["Konrad Wierzbik <konrad.wierzbik@gmail.com", "Łukasz Łakomy <wookie.xp.07@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+ink = { version = "~4.0.0", default-features = false}
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
+scale-info = { version = "2.4", default-features = false, features = ["derive"], optional = true }
+
+# These dependencies
+openbrush = { tag = "3.0.0", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = ["psp22", "psp34", "ownable", "pausable", "access_control"] }
+[lib]
+name = "abax_governance"
+path = "lib.rs"
+crate-type = [
+    "rlib"
+]
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    "scale/std",
+    "scale-info",
+    "scale-info/std",
+
+    # These dependencies
+    "openbrush/std",
+]
