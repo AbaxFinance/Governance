@@ -5,21 +5,17 @@ authors = ["Konrad Wierzbik <konrad.wierzbik@gmail.com", "Łukasz Łakomy <wooki
 edition = "2021"
 
 [dependencies]
-ink = { version = "~4.0.0", default-features = false}
-scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
-scale-info = { version = "2.4", default-features = false, features = ["derive"], optional = true }
+ink = { version = "4.2", default-features = false}
+scale = { package = "parity-scale-codec", version = "3.5.0", default-features = false, features = ["derive"] }
+scale-info = { version = "2.7", default-features = false, features = ["derive"], optional = true }
 
-openbrush = { tag = "3.0.0", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = ["psp22", "psp34", "ownable", "pausable", "access_control"] }
+openbrush = { tag = "3.1.1", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = ["psp22", "psp34", "ownable", "pausable", "access_control"] }
 
 abax_governance = { path = "../..", default-features = false }
 
 [lib]
 name = "staker"
 path = "lib.rs"
-crate-type = [
-	# Used for normal contract Wasm blobs.
-	"cdylib",
-]
 
 [features]
 default = ["std"]

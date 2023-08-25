@@ -1,10 +1,10 @@
-#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(not(feature = "std"), no_std, no_main)]
 #![feature(min_specialization)]
 #[openbrush::contract]
 pub mod governor {
 
+    use abax_governance::contracts_impls::govern::impls::storage::GovernRewardableSlashableStorage;
     use abax_governance::contracts_impls::govern::impls::storage::GovernStorage;
-    use abax_governance::contracts_impls::govern::impls::GovernRewardableSlashableStorage;
     use abax_governance::contracts_impls::govern::traits::EmitGovernEvents;
     use abax_governance::contracts_impls::govern::traits::Proposal;
     use abax_governance::contracts_impls::govern::traits::ProposalRules;

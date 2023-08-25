@@ -33,7 +33,7 @@ export async function proposeAndCheck(
   testEnv: TestEnv,
   caller: KeyringPair,
   proposal: Proposal,
-  description: (string | number | BN)[],
+  description: string,
   error?: GovernError | undefined,
 ) {
   const governor: Governor = testEnv.governor;
@@ -100,7 +100,7 @@ export async function proposeAndCheck(
       args: {
         proposalId: proposalHash,
         proposal: expectedProposal,
-        description: ('0x' + Buffer.from('Abax will be the best ;-)', 'utf8').toString('hex')) as any as number[],
+        description: 'Abax will be the best ;-)',
       },
     },
   ]);

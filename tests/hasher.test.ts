@@ -14,7 +14,7 @@ makeSuite('Hasher tests', (getTestEnv) => {
   });
 
   it('Hasher works', async () => {
-    const description = [0, 1, 2];
+    const description = 'abc';
     const proposal: Proposal = {
       rulesId: 1,
       voterRewardPartE12: 0,
@@ -25,7 +25,7 @@ makeSuite('Hasher tests', (getTestEnv) => {
   });
 
   it(`Hashin in different manners result in the same`, async () => {
-    const description = [0, 1, 2];
+    const description = 'abc';
     const proposal: Proposal = {
       rulesId: 1,
       voterRewardPartE12: 12,

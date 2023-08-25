@@ -1,19 +1,18 @@
 pub mod storage;
 
-// use openbrush::contracts::ownable::only_owner;
-// use openbrush::modifiers;
-pub use storage::*;
-
+pub use crate::contracts_impls::stake::impls::storage::StakeTimesStorage;
 use crate::contracts_impls::stake::traits::StakeInternal;
 use crate::contracts_impls::stake::traits::*;
 use crate::contracts_impls::timestamp_mock::impls::TimestampMockInternal;
 use crate::contracts_impls::timestamp_mock::impls::TimestampMockStorage;
-
 use ink::prelude::{vec::Vec, *};
 
 use openbrush::contracts::ownable::*;
 use openbrush::contracts::psp22::extensions::{burnable::*, mintable::*};
 use openbrush::traits::Storage;
+
+pub use self::storage::StakeCounterStorage;
+pub use self::storage::StakeStorage;
 
 pub const E12: u128 = 1_000_000_000_000;
 

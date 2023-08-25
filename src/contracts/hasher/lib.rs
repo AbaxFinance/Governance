@@ -1,4 +1,4 @@
-#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(not(feature = "std"), no_std, no_main)]
 #![feature(min_specialization)]
 #[openbrush::contract]
 pub mod hasher {
@@ -30,7 +30,7 @@ pub mod hasher {
             description: String,
         ) -> Hash {
             ink::env::debug_println!("hash_proposal_with_description | START");
-            let description_hash = Self::env().hash_bytes::<Blake2x256>(&description);
+            let description_hash = Self::env().hash_bytes::<Blake2x256>(&description.as_bytes());
 
             let mut hash_data: Vec<u8> = vec![];
             hash_data.append(&mut scale::Encode::encode(&proposal));
@@ -56,7 +56,7 @@ pub mod hasher {
 
         #[ink(message)]
         pub fn hash_description(&self, description: String) -> [u8; 32] {
-            Self::env().hash_bytes::<Blake2x256>(&description)
+            Self::env().hash_bytes::<Blake2x256>(&description.as_bytes())
         }
     }
 }
