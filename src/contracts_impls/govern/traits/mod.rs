@@ -39,6 +39,10 @@ pub trait GovernView {
     #[ink(message)]
     fn state(&self, proposal_id: ProposalId) -> Option<ProposalState>;
 
+    /// Returns ProposalStatus of proposal with proposal_id (proposal Hash).
+    #[ink(message)]
+    fn proposal_ids(&self) -> Vec<ProposalId>;
+
     /// Returns Some(UserVote) `account` has voted for `proposal_id` and None if hasn't.
     #[ink(message)]
     fn vote_of_for(&self, account: AccountId, proposal_id: ProposalId) -> Option<UserVote>;
@@ -214,6 +218,9 @@ pub trait GovernInternal {
 
     /// Returns ProposalState of proposal identified by `proposal_id` if it exists. Otherwise None.
     fn _state_of(&self, proposal_id: &ProposalId) -> Option<ProposalState>;
+
+    /// Returns ProposalState of proposal identified by `proposal_id` if it exists. Otherwise None.
+    fn _proposal_ids(&self) -> Vec<ProposalId>;
 
     /// Returns Some(UserVote) of `account` for `proposal_id` if `account has voted for the proposal. Otherwise None.
     fn _vote_of_for(&self, account: &AccountId, proposal_id: &ProposalId) -> Option<UserVote>;

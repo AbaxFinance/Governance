@@ -61,6 +61,9 @@ impl<T: Storage<GovernStorage> + GovernInternal> GovernView for T {
     fn state(&self, proposal_id: ProposalId) -> Option<ProposalState> {
         self._state_of(&proposal_id)
     }
+    fn proposal_ids(&self) -> Vec<ProposalId> {
+        self._proposal_ids()
+    }
 
     fn vote_of_for(&self, account: AccountId, proposal_id: ProposalId) -> Option<UserVote> {
         self._vote_of_for(&account, &proposal_id)
@@ -343,6 +346,7 @@ impl<
                 votes_against_with_slash: 0,
             },
         );
+        self.data::<GovernStorage>().proposal_ids.push(*proposal_id);
 
         self._emit_proposal_created_event(&proposal_id, proposal, description);
         Ok(())
@@ -357,6 +361,9 @@ impl<
 
     fn _state_of(&self, proposal_id: &ProposalId) -> Option<ProposalState> {
         self.data::<GovernStorage>().state.get(proposal_id)
+    }
+    fn _proposal_ids(&self) -> Vec<ProposalId> {
+        self.data::<GovernStorage>().proposal_ids.clone()
     }
 
     fn _vote_of_for(&self, account: &AccountId, proposal_id: &ProposalId) -> Option<UserVote> {
