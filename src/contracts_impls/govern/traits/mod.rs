@@ -62,7 +62,7 @@ pub trait Govern {
     /// Returns `PropositionDeposit` if transferred_value is smaller than `rules.deposit`
     /// Returns `RewardMultiplier` if `proposal.voter_reward_multiplier_e12` was to hight.
     #[ink(message, payable)]
-    fn propose(&mut self, proposal: Proposal, description: String) -> Result<(), GovernError>;
+    fn propose(&mut self, proposal: Proposal, description: String) -> Result<Hash, GovernError>;
 
     /// Finilize `proposal_id` if the finalization conditions are met.
     /// If finalized with `Succeeded` or with `Defeated` the AZERO deposit is returned to the proposer.

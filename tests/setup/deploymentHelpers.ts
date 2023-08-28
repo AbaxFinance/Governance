@@ -18,6 +18,7 @@ import Staker from 'typechain/contracts/staker';
 import GovernanceToken from 'typechain/contracts/governance_token';
 import Hasher from 'typechain/contracts/hasher';
 import BlockTimestampProvider from 'typechain/contracts/block_timestamp_provider';
+import GovernanceTokenMinter from 'typechain/contracts/governance_token_minter';
 import { AccountId, BURNER, Balance, DAY, E21, MINTER, Option, Timestamp } from 'scripts/types_and_consts';
 import { ProposalRules } from 'typechain/types-returns/governor';
 import { ReturnNumber } from '@727-ventures/typechain-types';
@@ -121,6 +122,10 @@ export const deployStaker = async (
 
 export const deployBlockTimestampProvider = async (owner: KeyringPair, shouldReturnMockValue = false) =>
   await deployWithLog(owner, BlockTimestampProvider, 'block_timestamp_provider', shouldReturnMockValue, owner.address);
+
+export const deployGovernanceTokenMinter = async (owner: KeyringPair) => {
+  return deployWithLog(owner, GovernanceTokenMinter, 'governance_token_minter');
+};
 
 // const getSelectorsFromMessages = (messages) => {
 //   return messages.map((message) => {
@@ -332,7 +337,10 @@ export const deployAndConfigureSystem = async (
   deploymentConfigOverrides: Partial<DeploymentConfig> = defaultDeploymentConfig,
   saveConfigToFilePath?: string,
 ): Promise<TestEnv> => {
-  const config: DeploymentConfig = defaultDeploymentConfig;
+  const config: DeploymentConfig = {
+    ...defaultDeploymentConfig,
+    ...deploymentConfigOverrides,
+  };
 
   const { deployer, users } = config;
 
@@ -348,6 +356,10 @@ export const deployAndConfigureSystem = async (
   await governor.tx.setTimestampProvider(timestampProvider.address);
   await staker.tx.setTimestampProvider(timestampProvider.address);
 
+  //FOR TESTING PURPOSES
+  const governanceTokenMinter = await deployGovernanceTokenMinter(deployer);
+  await govToken.withSigner(deployer).tx.grantRole(MINTER, governanceTokenMinter.address);
+
   const testEnv: TestEnv = {
     deployer,
     users,
@@ -357,6 +369,7 @@ export const deployAndConfigureSystem = async (
     timestampProvider,
     psp22Mintable,
     hasher,
+    governanceTokenMinter,
   };
 
   if (saveConfigToFilePath) {
@@ -391,6 +404,10 @@ async function saveConfigToFile(testEnv: TestEnv, writePath: string) {
       {
         name: testEnv.hasher.name,
         address: testEnv.hasher.address,
+      },
+      {
+        name: testEnv.governanceTokenMinter.name,
+        address: testEnv.governanceTokenMinter.address,
       },
     ],
     writePath,

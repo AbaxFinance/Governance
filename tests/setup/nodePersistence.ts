@@ -11,6 +11,7 @@ import Staker from 'typechain/contracts/staker';
 import Hasher from 'typechain/contracts/hasher';
 import Governor from 'typechain/contracts/governor';
 import GovernanceToken from 'typechain/contracts/governance_token';
+import GovernanceTokenMinter from 'typechain/contracts/governance_token_minter';
 import BlockTimestampProvider from 'typechain/contracts/block_timestamp_provider';
 import { TestEnv } from 'tests/utlis/make-suite';
 
@@ -123,6 +124,9 @@ export const readContractsFromFile = async (writePath = DEFAULT_DEPLOYED_CONTRAC
   const hasherContractInfo = contracts.find((c) => c.name === 'hasher');
   if (!hasherContractInfo) throw 'hasher ContractInfo not found';
   const hasher = await getContractObject(Hasher, hasherContractInfo.address, deployer);
+  const govTokenMinterInfo = contracts.find((c) => c.name === 'governance_token_minter');
+  if (!govTokenMinterInfo) throw 'hasher ContractInfo not found';
+  const governanceTokenMinter = await getContractObject(GovernanceTokenMinter, govTokenMinterInfo.address, deployer);
 
   return {
     users,
@@ -133,6 +137,7 @@ export const readContractsFromFile = async (writePath = DEFAULT_DEPLOYED_CONTRAC
     timestampProvider,
     psp22Mintable,
     hasher,
+    governanceTokenMinter,
   };
 };
 

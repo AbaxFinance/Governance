@@ -1,17 +1,15 @@
 [package]
 name = "governance_token_minter"
-version = "0.0.1"
-authors = [""]
+version = "0.1.0"
+authors = ["Konrad Wierzbik <konrad.wierzbik@gmail.com", "Łukasz Łakomy <wookie.xp.07@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-ink = { version = "4.2.1", default-features = false}
+ink = { version = "4.2", default-features = false}
 scale = { package = "parity-scale-codec", version = "3.5.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.7", default-features = false, features = ["derive"], optional = true }
 
-openbrush = { tag = "4.0.0-beta", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = ["psp22"] }
-
-lending_project = { path = "../..", default-features = false }
+openbrush = { tag = "3.1.1", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = ["psp22", "psp34", "ownable", "pausable", "access_control"] }
 
 [lib]
 name = "governance_token_minter"
@@ -26,7 +24,13 @@ std = [
     "scale-info/std",
 
     # These dependencies
-    "lending_project/std",
     "openbrush/std",
 ]
 ink-as-dependency = []
+
+[profile.dev]
+codegen-units = 16            # Use slightly better optimizations.
+overflow-checks = false 
+
+[profile.release]
+overflow-checks = false 

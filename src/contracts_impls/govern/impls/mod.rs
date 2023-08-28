@@ -88,14 +88,14 @@ impl<
     /// # Storage modifications
     /// [GovernStorage]
     /// `state` - of key hash(`proposal`, hash(`description`)) is set to inital state
-    fn propose(&mut self, proposal: Proposal, description: String) -> Result<(), GovernError> {
+    fn propose(&mut self, proposal: Proposal, description: String) -> Result<Hash, GovernError> {
         self._check_rules(&proposal)?;
         let description_hash = Self::env().hash_bytes::<Blake2x256>(&description.as_bytes());
         let proposal_id = self._hash_proposal(&proposal, &description_hash);
 
         self._register_proposal(&proposal_id, &proposal, &description)?;
 
-        Ok(())
+        Ok(proposal_id)
     }
 
     /// # Storage modifications

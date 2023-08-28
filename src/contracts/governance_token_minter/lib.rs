@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
+#![feature(min_specialization)]
 
-#[openbrush::implementation(Ownable)]
 #[openbrush::contract]
-pub mod governance_token_minter {
+pub mod psp22_emitable {
 
     use openbrush::{
         contracts::{
@@ -10,18 +10,26 @@ pub mod governance_token_minter {
             psp22::{extensions::mintable::PSP22MintableRef, PSP22Error},
         },
         storage::Mapping,
-        traits::Storage,
+        traits::{Storage, ZERO_ADDRESS},
     };
 
-    use ink::prelude::vec::Vec;
-
     #[ink(storage)]
-    #[derive(Default, Storage)]
+    #[derive(Storage)]
     pub struct GovernanceTokenMinter {
         #[storage_field]
         ownable: ownable::Data,
-        gov_token_address: AccountId,
         already_minted: Mapping<AccountId, bool>,
+        gov_token_address: AccountId,
+    }
+
+    impl Default for GovernanceTokenMinter {
+        fn default() -> Self {
+            Self {
+                ownable: Default::default(),
+                already_minted: Default::default(),
+                gov_token_address: ZERO_ADDRESS.into(),
+            }
+        }
     }
 
     impl GovernanceTokenMinter {
@@ -29,7 +37,7 @@ pub mod governance_token_minter {
         pub fn new() -> Self {
             let mut instance = Self::default();
             let caller = instance.env().caller();
-            ownable::Internal::_init_with_owner(&mut instance, caller);
+            instance._init_with_owner(caller);
             instance
         }
 

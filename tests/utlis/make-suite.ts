@@ -9,6 +9,7 @@ import Governor from 'typechain/contracts/governor';
 import Staker from 'typechain/contracts/staker';
 import Hasher from 'typechain/contracts/hasher';
 import GovernanceToken from 'typechain/contracts/governance_token';
+import GovernanceTokenMinter from 'typechain/contracts/governance_token_minter';
 import BlockTimestampProvider from 'typechain/contracts/block_timestamp_provider';
 
 export interface TestEnv {
@@ -20,6 +21,7 @@ export interface TestEnv {
   govToken: GovernanceToken;
   timestampProvider: BlockTimestampProvider;
   hasher: Hasher;
+  governanceTokenMinter: GovernanceTokenMinter;
 }
 
 function makeSuiteInternal(
