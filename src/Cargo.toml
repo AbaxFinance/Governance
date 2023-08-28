@@ -5,7 +5,8 @@ members = [
     "contracts/staker",
     "contracts/block_timestamp_provider",
     "contracts/psp22_mintable",
-    "contracts/hasher"
+    "contracts/hasher",
+    "contracts/governance_token_minter",
 ]
 
 [package]
