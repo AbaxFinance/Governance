@@ -7,10 +7,16 @@ pub mod psp22_emitable {
     use openbrush::{
         contracts::{
             ownable::*,
-            psp22::{extensions::mintable::PSP22MintableRef, PSP22Error},
+            psp22::{
+                extensions::mintable::PSP22MintableRef,
+                PSP22Error,
+            },
         },
         storage::Mapping,
-        traits::{Storage, ZERO_ADDRESS},
+        traits::{
+            Storage,
+            ZERO_ADDRESS,
+        },
     };
 
     #[ink(storage)]
@@ -34,24 +40,23 @@ pub mod psp22_emitable {
 
     impl GovernanceTokenMinter {
         #[ink(constructor)]
-        pub fn new() -> Self {
+        pub fn new(gov_token_adrress: AccountId) -> Self {
             let mut instance = Self::default();
             let caller = instance.env().caller();
             instance._init_with_owner(caller);
+            instance.gov_token_address = gov_token_adrress;
             instance
         }
 
         #[ink(message)]
-        pub fn mint(
-            &mut self,
-            to: AccountId,
-            amount: Balance,
-        ) -> Result<(), GovernanceTokenMinterError> {
-            if !self.already_minted.contains(&to) {
-                PSP22MintableRef::mint(&self.gov_token_address, to, amount)?;
-                self.already_minted.insert(&to, &true);
+        pub fn mint(&mut self) -> Result<(), GovernanceTokenMinterError> {
+            let caller = self.env().caller();
+            let amount = 10_000 * 1_000_000_000_000_u128;
+            if !self.already_minted.contains(&caller) {
+                PSP22MintableRef::mint(&self.gov_token_address, caller, amount)?;
+                self.already_minted.insert(&caller, &true);
             } else {
-                return Err(GovernanceTokenMinterError::AlreadyMinted);
+                return Err(GovernanceTokenMinterError::AlreadyMinted)
             }
             Ok(())
         }

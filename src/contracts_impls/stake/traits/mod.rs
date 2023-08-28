@@ -37,7 +37,7 @@ pub trait StakeView {
     #[ink(message)]
     fn total_unstake(&self) -> Balance;
 
-    /// Returns the stake of an `account` plus aomunt of tokens initialized for unstake after `timestamp`.
+    /// Returns the stake of an `account` plus aomunt of tokens initialized for unstake after `timestamp` and not yet unstaken.
     #[ink(message)]
     fn stake_and_unstakes_initialized_after(
         &self,
