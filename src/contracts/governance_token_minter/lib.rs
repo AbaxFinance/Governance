@@ -24,7 +24,7 @@ pub mod psp22_emitable {
     pub struct GovernanceTokenMinter {
         #[storage_field]
         ownable: ownable::Data,
-        already_minted: Mapping<AccountId, bool>,
+        already_minted: Mapping<AccountId, ()>,
         gov_token_address: AccountId,
     }
 
@@ -54,11 +54,16 @@ pub mod psp22_emitable {
             let amount = 10_000 * 1_000_000_000_000_u128;
             if !self.already_minted.contains(&caller) {
                 PSP22MintableRef::mint(&self.gov_token_address, caller, amount)?;
-                self.already_minted.insert(&caller, &true);
+                self.already_minted.insert(&caller, &());
             } else {
                 return Err(GovernanceTokenMinterError::AlreadyMinted)
             }
             Ok(())
+        }
+
+        #[ink(message)]
+        pub fn has_already_minted(&self, account: AccountId) -> bool {
+            self.already_minted.contains(&account)
         }
     }
 

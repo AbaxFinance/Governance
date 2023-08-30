@@ -6,7 +6,13 @@ pub use errors::*;
 pub use events::*;
 pub use structs::*;
 
-use openbrush::traits::{AccountId, Balance, Hash, String, Timestamp};
+use openbrush::traits::{
+    AccountId,
+    Balance,
+    Hash,
+    String,
+    Timestamp,
+};
 
 use ink::prelude::vec::Vec;
 
@@ -91,11 +97,7 @@ pub trait Govern {
     /// Returns `WrongStatus` if proposal status is not `Succeeded`.
     /// Returns `UnderlyingTransactionReverted` if any of Transactions from the `proposal` fails.
     #[ink(message)]
-    fn execute(
-        &mut self,
-        proposal: Proposal,
-        description_hash: [u8; 32],
-    ) -> Result<(), GovernError>;
+    fn execute(&mut self, proposal: Proposal, description_hash: [u8; 32]) -> Result<(), GovernError>;
 
     /// Cast vote in the name of `caller` on `proposa_id` for `vote` with `reason`.
     /// `reason` is not stored. Only users with active stake can vote.
@@ -107,12 +109,7 @@ pub trait Govern {
     /// Returns `ProposalDoesntExist` if proposal doesn't exist.
     /// Returns `NotActive` if proposal status isn't `Active`.
     #[ink(message)]
-    fn vote(
-        &mut self,
-        proposal_id: ProposalId,
-        vote: Vote,
-        reason: Vec<u8>,
-    ) -> Result<(), GovernError>;
+    fn vote(&mut self, proposal_id: ProposalId, vote: Vote, reason: Vec<u8>) -> Result<(), GovernError>;
 }
 
 #[openbrush::trait_definition]
@@ -150,11 +147,7 @@ pub trait GovernRewardableSlashable {
     /// Returns `InnsuficientVotes` if `account` is unstaking.
     /// Returns `NothingToSlash` if `account` has not stake or has staken after the `proposal_id` was finalized or `proposal_id` has finalized in "flat period".
     #[ink(message)]
-    fn slash_voter(
-        &mut self,
-        account: AccountId,
-        proposal_id: ProposalId,
-    ) -> Result<(), GovernError>;
+    fn slash_voter(&mut self, account: AccountId, proposal_id: ProposalId) -> Result<(), GovernError>;
 }
 
 #[openbrush::trait_definition]
@@ -249,12 +242,7 @@ pub trait GovernInternal {
     ) -> Result<(), GovernError>;
 
     /// Returns the minimal amount of votes to finalize proposal with `state` that uses `rules` at time `now`.    
-    fn _minimum_to_finalize(
-        &self,
-        state: &ProposalState,
-        rules: &ProposalRules,
-        now: Timestamp,
-    ) -> Balance;
+    fn _minimum_to_finalize(&self, state: &ProposalState, rules: &ProposalRules, now: Timestamp) -> Balance;
 
     /// Finalizes proposal identified by `proposal_id`
     ///
@@ -275,11 +263,7 @@ pub trait GovernInternal {
     /// Returns `ProposalDoesntExist` if there is no proposal identified by `proposal_id.
     /// Returns `WronfStatus` if proposal identified by `proposal_id` has different than Succeeded status.
     /// Returns `UnderlyingTransactionReverted` if any of Transactions from the `proposal` fails.
-    fn _execute(
-        &mut self,
-        proposal_id: &ProposalId,
-        proposal: &Proposal,
-    ) -> Result<(), GovernError>;
+    fn _execute(&mut self, proposal_id: &ProposalId, proposal: &Proposal) -> Result<(), GovernError>;
 
     /// Adds new ProposalRules under `next_rules_id`
     ///
@@ -315,11 +299,7 @@ pub trait GovernRewardableSlashableInternal {
     /// Returns `AlreadyClaimedOrSlashed` if reward was already claimed.
     /// Returns `DidntVote` if `account` didn't vote for the `proposal_id`
     /// Returns `InnsuficientVotes` if `account` is unstaking.
-    fn _reward_voter(
-        &mut self,
-        account: &AccountId,
-        proposal_id: &ProposalId,
-    ) -> Result<(), GovernError>;
+    fn _reward_voter(&mut self, account: &AccountId, proposal_id: &ProposalId) -> Result<(), GovernError>;
 
     /// Slashes the stake of `account` if didn't vote for `proposal_id` and `proposal_id` was finalized during "final_period".
     /// Modifies `account` stake and changes `claimed_or_slashed`.
@@ -334,9 +314,5 @@ pub trait GovernRewardableSlashableInternal {
     /// Returns `Voted` if `account` voted for the `proposal_id`
     /// Returns `InnsuficientVotes` if `account` is unstaking.
     /// Returns `NothingToSlash` if `account` has not stake or has staken after the `proposal_id` was finalized or `proposal_id` has finalized in "flat period".
-    fn _slash_voter(
-        &mut self,
-        account: &AccountId,
-        proposal_id: &ProposalId,
-    ) -> Result<(), GovernError>;
+    fn _slash_voter(&mut self, account: &AccountId, proposal_id: &ProposalId) -> Result<(), GovernError>;
 }
