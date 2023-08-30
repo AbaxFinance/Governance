@@ -29,24 +29,31 @@ const getCodePromise = (api: ApiPromise, contractName: string): CodePromise => {
 
   return new CodePromise(api, abi, wasm);
 };
-export const setupContract = async (owner: KeyringPair, contractName: string, constructorName: string, ...constructorArgs: any[]) => {
+export const setupContract = async (signer: KeyringPair, contractName: string, constructorName: string, ...constructorArgs: any[]) => {
   const api = await apiProviderWrapper.getAndWaitForReady();
   const codePromise = getCodePromise(api, contractName);
   // maximum gas to be consumed for the instantiation. if limit is too small the instantiation will fail.
-  const milion = 1000000n;
-  const gasLimit = milion * milion;
+  const MAX_CALL_WEIGHT = new BN(5_000_000_000).isubn(1);
+  const PROOFSIZE = new BN(3_000_000);
+  const gasLimit = api?.registry.createType('WeightV2', {
+    refTime: MAX_CALL_WEIGHT,
+    proofSize: PROOFSIZE,
+  }) as WeightV2;
+
+  // const milion = 1000000n;
+  // const gasLimit = milion * milion;
+  // const gasLimit = 3000n * 1000000n;
   // const gasLimitFromNetwork = api.consts.system.blockWeights
   //   ? (api.consts.system.blockWeights as unknown as { maxBlock: WeightV1 }).maxBlock
   //   : (api.consts.system.maximumBlockWeight as unknown as WeightV1);
   // // a limit to how much Balance to be used to pay for the storage created by the instantiation
   // if null is passed, unlimited balance can be used
+
   const storageDepositLimit = null;
+
   // used to derive contract address,
   // use null to prevent duplicate contracts
   const salt = new Uint8Array();
-  // balance to transfer to the contract account, formerly know as "endowment".
-  // use only with payable constructors, will fail otherwise.
-  const value = (await apiProviderWrapper.getAndWaitForReady()).registry.createType('Balance', 1000);
 
   const deployedContract = await new Promise<ContractPromise>((resolve, reject) => {
     let unsub: () => void;
@@ -54,13 +61,13 @@ export const setupContract = async (owner: KeyringPair, contractName: string, co
       {
         storageDepositLimit: null,
         // gasLimit: new BN(gasLimitFromNetwork.toString()).divn(2),
-        gasLimit: gasLimit,
+        gasLimit,
         salt: undefined,
         value: undefined,
       },
       ...constructorArgs,
     );
-    tx.signAndSend(owner, (result: CodeSubmittableResult<'promise'>) => {
+    tx.signAndSend(signer, (result: CodeSubmittableResult<'promise'>) => {
       const { status, dispatchError, contract } = result;
       if (status.isInBlock) {
         if (dispatchError || !contract) {
@@ -78,7 +85,7 @@ export const setupContract = async (owner: KeyringPair, contractName: string, co
       .catch(reject);
   });
 
-  return { owner, deployedContract };
+  return { signer, deployedContract };
 };
 
 const deployWithLog = async <T>(
@@ -89,7 +96,7 @@ const deployWithLog = async <T>(
 ) => {
   const ret = await setupContract(owner, contractName, 'new', ...deployArgs);
   if (process.env.DEBUG) console.log(`Deployed ${contractName}: ${ret.deployedContract.address.toString()}`);
-  return getContractObject<T>(constructor, ret.deployedContract.address.toString(), ret.owner);
+  return getContractObject<T>(constructor, ret.deployedContract.address.toString(), ret.signer);
 };
 
 export const deployHasher = async (owner: KeyringPair) => await deployWithLog(owner, Hasher, 'hasher');
@@ -123,8 +130,8 @@ export const deployStaker = async (
 export const deployBlockTimestampProvider = async (owner: KeyringPair, shouldReturnMockValue = false) =>
   await deployWithLog(owner, BlockTimestampProvider, 'block_timestamp_provider', shouldReturnMockValue, owner.address);
 
-export const deployGovernanceTokenMinter = async (owner: KeyringPair) => {
-  return deployWithLog(owner, GovernanceTokenMinter, 'governance_token_minter');
+export const deployGovernanceTokenMinter = async (owner: KeyringPair, govTokenAddress: string) => {
+  return deployWithLog(owner, GovernanceTokenMinter, 'governance_token_minter', govTokenAddress);
 };
 
 // const getSelectorsFromMessages = (messages) => {
@@ -278,14 +285,14 @@ export type StakerConfig = {
 };
 
 export const defaultProposalRules: ProposalRules = {
-  minimumStakePartE12: toE12(0.01),
+  minimumStakePartE12: 0, //toE12(0.01),
   deposit: new ReturnNumber(0), // TODO toE12(1000),
-  initialPeriod: 3 * DAY,
-  flatPeriod: 7 * DAY,
-  finalPeriod: 4 * DAY,
-  maximalVoterRewardPartE12: toE12(0.05),
-  voterSlashPartE12: toE12(0.2),
-  proposerSlashPartE12: toE12(0.5),
+  initialPeriod: 1 * DAY, //3 * DAY,
+  flatPeriod: 2 * DAY, //7 * DAY,
+  finalPeriod: 1 * DAY, //4 * DAY,
+  maximalVoterRewardPartE12: 0, //toE12(0.05),
+  voterSlashPartE12: 0, //toE12(0.2),
+  proposerSlashPartE12: 0, //toE12(0.5),
 };
 
 export const defaultGovernorConfig = {
@@ -350,15 +357,21 @@ export const deployAndConfigureSystem = async (
   await govToken.withSigner(deployer).tx.grantRole(MINTER, governor.address);
   await govToken.withSigner(deployer).tx.grantRole(BURNER, governor.address);
 
-  await govToken.withSigner(deployer).tx.renounceRole(0, deployer.address);
   await govToken.withSigner(deployer).tx.transfer(governor.address, config.govTokenConfig.initialSupply.muln(96).divn(100), []);
 
   await governor.tx.setTimestampProvider(timestampProvider.address);
   await staker.tx.setTimestampProvider(timestampProvider.address);
 
   //FOR TESTING PURPOSES
-  const governanceTokenMinter = await deployGovernanceTokenMinter(deployer);
+  const governanceTokenMinter = await deployGovernanceTokenMinter(deployer, govToken.address);
   await govToken.withSigner(deployer).tx.grantRole(MINTER, governanceTokenMinter.address);
+
+  await governanceTokenMinter.withSigner(deployer).tx.mint();
+  await govToken.withSigner(deployer).tx.approve(governor.address, '100000');
+  await governor.withSigner(deployer).tx.stake('100000');
+  //FOR TESTING PURPOSES
+
+  await govToken.withSigner(deployer).tx.renounceRole(0, deployer.address);
 
   const testEnv: TestEnv = {
     deployer,

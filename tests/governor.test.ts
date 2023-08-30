@@ -637,10 +637,10 @@ makeSuite('Governor tests', (getTestEnv) => {
         await proposeAndCheck(testEnv, users[0], proposal, description, undefined);
       });
       it('user0 tries to execute non-existing proposal', async () => {
-        await executeAndCheck(testEnv, users[0], proposal2, descriptionHash, GovernErrorBuilder.ProposalDoesntExist());
+        await executeAndCheck(testEnv, users[0], proposal2, descriptionHash, description, GovernErrorBuilder.ProposalDoesntExist());
       });
       it('user0 tries to execute active proposal', async () => {
-        await executeAndCheck(testEnv, users[0], proposal, descriptionHash, GovernErrorBuilder.WrongStatus());
+        await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description, GovernErrorBuilder.WrongStatus());
       });
       describe(`proposal is finalized with defeated`, () => {
         beforeEach(async () => {
@@ -652,7 +652,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 tries to execute defeated proposal', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, GovernErrorBuilder.WrongStatus());
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description, GovernErrorBuilder.WrongStatus());
         });
       });
       describe(`proposal is finalized with defeatedWithSlash`, () => {
@@ -665,7 +665,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 tries to execute defeatedWithSlash proposal', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, GovernErrorBuilder.WrongStatus());
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description, GovernErrorBuilder.WrongStatus());
         });
       });
       describe(`proposal is finalized with Succeeded`, () => {
@@ -678,7 +678,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 executes Succeded proposal with no Tx', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash);
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description);
         });
       });
     });
@@ -737,7 +737,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 executes Succeded proposal with no Tx', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash);
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description);
 
           expect((await govToken.query.allowance(governor.address, users[0].address)).value.ok!.rawNumber.toString()).to.be.equal(E12.toString());
           expect((await govToken.query.allowance(governor.address, users[1].address)).value.ok!.rawNumber.toString()).to.be.equal(

@@ -77,7 +77,7 @@ pub trait Stake {
     ///
     /// # Errors
     /// Returns `NoInitializedUnstakes` if `caller` has no initialized unstakes.
-    /// Returns `ToEarly` if no of `caller` initialized unstakes is ready for unstaking.
+    /// Returns `TooEarly` if no of `caller` initialized unstakes is ready for unstaking.
     /// Retuns wrapeed error from `want` if transfer fails (can be wrapped `PSP22Error`)
     #[ink(message)]
     fn unstake(&mut self) -> Result<Balance, StakeError>;

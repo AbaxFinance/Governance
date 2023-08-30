@@ -13,7 +13,7 @@ pub enum StakeError {
     InsufficientStake,
     UnstakeNotInitialized,
     NoInitializedUnstakes,
-    ToEarly,
+    TooEarly,
     Unstaking,
     NothingToUnstake,
     ToManyUnstakes,

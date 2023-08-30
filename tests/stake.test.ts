@@ -154,11 +154,11 @@ makeSuite('Stake tests', (getTestEnv) => {
           await staker.withSigner(users[0]).tx.initializeUnstake(amountStaked);
         });
         it(`tries to instantly unstake but no time has passed yet`, async () => {
-          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.ToEarly());
+          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.TooEarly());
         });
         it(`tries to unstake after 21DAYS minus one second (untsake period is 21 DAYS)`, async () => {
           await timestmpProvider.tx.increaseBlockTimestamp(21 * DAY - 1);
-          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.ToEarly());
+          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.TooEarly());
         });
 
         describe(`21 Days later`, () => {
@@ -177,11 +177,11 @@ makeSuite('Stake tests', (getTestEnv) => {
           await staker.withSigner(users[0]).tx.initializeUnstake(amountStaked.divn(2));
         });
         it(`tries to instantly unstake but no time has passed yet`, async () => {
-          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.ToEarly());
+          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.TooEarly());
         });
         it(`tries to unstake after 21DAYS minus one second (untsake period is 21 DAYS)`, async () => {
           await timestmpProvider.tx.increaseBlockTimestamp(20 * DAY - 1);
-          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.ToEarly());
+          await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.TooEarly());
         });
 
         describe(`21 Days later`, () => {
@@ -190,7 +190,7 @@ makeSuite('Stake tests', (getTestEnv) => {
           });
           it(`unstakes successfully one of his unstakes - event is emited, state of contract is updated`, async () => {
             await unstakeAndCheck(testEnv, users[0], undefined);
-            await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.ToEarly());
+            await unstakeAndCheck(testEnv, users[0], StakeErrorBuilder.TooEarly());
           });
           describe(`1 Day later`, () => {
             beforeEach(async () => {

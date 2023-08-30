@@ -35,6 +35,7 @@ export async function executeAndCheck(
   caller: KeyringPair,
   proposal: Proposal,
   descriptionHash: number[],
+  description: string,
   error?: GovernError | undefined,
 ) {
   const governor: Governor = testEnv.governor;
@@ -44,7 +45,7 @@ export async function executeAndCheck(
     return;
   }
 
-  const proposalId = hexToNumbers(((await governor.query.hashProposal(proposal, descriptionHash)).value.ok as string).substring(2)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  const proposalId = hexToNumbers(((await governor.query.hashProposal(proposal, description)).value.ok as string).substring(2)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   const storageStateBefore: ExecuteStorageModifications = await getExecuteStorageModifications(governor, proposalId);
 

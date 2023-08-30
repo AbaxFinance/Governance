@@ -1,0 +1,9 @@
+[
+  { "name": "governor", "address": "5GMPxmh6rsMgXNkUPcNpwHxBeRNTXCvREVX4AoRbtgvjjTdz" },
+  { "name": "governance_token", "address": "5HqRPyyVSYChL364xmkhoUScAPz9BXkHswNT9BzpubdGpBVZ" },
+  { "name": "block_timestamp_provider", "address": "5Fk7K9vWg9xSAoaf8DdMX1micRB1uYoMkbdZTyTNZUyi9RHt" },
+  { "name": "staker", "address": "5H8bq7KpoXHRkCyqJjmytYMoGfcdHTRTJMY3zFk54HvuyHmK" },
+  { "name": "psp22_mintable", "address": "5FQ9APCPyZY6nUnJjX3trA8Zj8Amw2u9f26q2FYufGwvYuMu" },
+  { "name": "hasher", "address": "5G1pdho3LBRiRyXrTbDCgikHTGsxM7rS5m1tJPFQmKPTTfys" },
+  { "name": "governance_token_minter", "address": "5CaUojHSuQ5WfsuvcbAjEpiGd28XNqnZFMohAaWKra3unXvy" }
+]

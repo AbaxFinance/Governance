@@ -99,7 +99,7 @@ pub struct ProposalState {
     /// Stake::counter_stake at start
     pub counter_at_start: Balance,
     /// time of proposal finalization. Some if proposal finalized. None if porposal is not finalized yet.
-    pub finlalized: Option<Timestamp>,
+    pub finalized: Option<Timestamp>,
     /// amount of votes to accept the proposal
     pub votes_for: Balance,
     /// amount of votes to reject proposal

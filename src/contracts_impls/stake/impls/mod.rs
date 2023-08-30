@@ -440,7 +440,7 @@ impl<
         let timestamp = self._timestamp();
         let unstake_period = self._unstake_period();
         if timestamp < unstakes[0].init_time + unstake_period {
-            return Err(StakeError::ToEarly);
+            return Err(StakeError::TooEarly);
         }
 
         let mut index: usize = 0;

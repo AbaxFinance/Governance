@@ -37,8 +37,9 @@ impl<'a> scale::Encode for CallInput<'a> {
 }
 pub const E6: u128 = 10 ^ 6;
 
-impl<T: Storage<GovernStorage> + GovernInternal> GovernView for T {
-    fn hash_proposal(&self, proposal: Proposal, description_hash: [u8; 32]) -> Hash {
+impl<T: Storage<GovernStorage> + GovernInternal + Storage<TimestampMockStorage>> GovernView for T {
+    fn hash_proposal(&self, proposal: Proposal, description: String) -> Hash {
+        let description_hash = Self::env().hash_bytes::<Blake2x256>(&description.as_bytes());
         self._hash_proposal(&proposal, &description_hash)
     }
 
@@ -56,6 +57,17 @@ impl<T: Storage<GovernStorage> + GovernInternal> GovernView for T {
 
     fn status(&self, proposal_id: ProposalId) -> Option<ProposalStatus> {
         self._status_of(&proposal_id)
+    }
+
+    fn minimum_to_finalize(&self, proposal_id: ProposalId) -> Result<Balance, GovernError> {
+        let proposal = self
+            ._state_of(&proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
+        let rules = self
+            ._rule(&proposal.rules_id)
+            .ok_or(GovernError::NoSuchRule)?;
+        let timestamp = self._timestamp();
+        Ok(self._minimum_to_finalize(&proposal, &rules, timestamp))
     }
 
     fn state(&self, proposal_id: ProposalId) -> Option<ProposalState> {
@@ -340,7 +352,7 @@ impl<
                 start: timestamp,
                 counter_at_start,
                 votes_at_start,
-                finlalized: None,
+                finalized: None,
                 votes_for: 0,
                 votes_against: 0,
                 votes_against_with_slash: 0,
@@ -538,7 +550,7 @@ impl<
         } else {
             return Err(GovernError::FinalizeCondition);
         }
-        state.finlalized = Some(self._timestamp());
+        state.finalized = Some(self._timestamp());
 
         self.data::<GovernStorage>()
             .state
@@ -728,12 +740,12 @@ impl<
             return Err(GovernError::StillActive);
         }
         let rules = self._rule(&state.rules_id).ok_or(GovernError::NoSuchRule)?;
-        if state.finlalized.unwrap() <= state.start + rules.initial_period + rules.flat_period {
+        if state.finalized.unwrap() <= state.start + rules.initial_period + rules.flat_period {
             return Err(GovernError::NothingToSlash);
         }
         if self._stake_timestamp_of(&account).is_some() {
             if self._stake_timestamp_of(account).unwrap()
-                > state.finlalized.unwrap() - 24 * 60 * 60 * 1000
+                > state.finalized.unwrap() - 24 * 60 * 60 * 1000
             {
                 return Err(GovernError::NothingToSlash);
             }
