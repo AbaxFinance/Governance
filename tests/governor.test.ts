@@ -70,7 +70,7 @@ makeSuite('Governor tests', (getTestEnv) => {
   describe(' There is 6 stakers (user0,...,user5), with stake proportions 100,100,10,10,1,1', () => {
     describe('Proposing:', () => {
       it('uesr0 trying to use not allowed rule', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 1,
           voterRewardPartE12: 0,
@@ -90,7 +90,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       // });
 
       it('user4 trying to propose with insufficient Votes', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
           voterRewardPartE12: toE12(0.051),
@@ -100,7 +100,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
 
       it('user2 trying to set to high RewardMultiplier', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
           voterRewardPartE12: toE12(0.051),
@@ -109,7 +109,7 @@ makeSuite('Governor tests', (getTestEnv) => {
         await proposeAndCheck(testEnv, users[2], proposal, description, GovernErrorBuilder.RewardMultiplier());
       });
       it('user2 trying to set to high RewardMultiplier for him', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
           voterRewardPartE12: toE12(0.05),
@@ -118,7 +118,7 @@ makeSuite('Governor tests', (getTestEnv) => {
         await proposeAndCheck(testEnv, users[2], proposal, description, GovernErrorBuilder.RewardMultiplier());
       });
       it('user0 successfully creates proposal', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
           voterRewardPartE12: toE12(0.05),
@@ -128,7 +128,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
 
       it('user0 tires to create proposal twice', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
           voterRewardPartE12: toE12(0.05),
@@ -139,7 +139,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
 
       it('user1 tires to create proposal after user 0 already created it', async () => {
-        const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+        const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
           voterRewardPartE12: toE12(0.05),
@@ -150,7 +150,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
     });
     describe('Voting', () => {
-      const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+      const description = 'Abax will be the best ;-)';
       const proposal: Proposal = {
         rulesId: 0,
         voterRewardPartE12: 0,
@@ -190,7 +190,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
     });
     describe('Finalize', () => {
-      const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+      const description = 'Abax will be the best ;-)';
       const proposal: Proposal = {
         rulesId: 0,
         voterRewardPartE12: 0,
@@ -479,7 +479,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
     });
     describe('SlashVoter', () => {
-      const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+      const description = 'Abax will be the best ;-)';
       const proposal: Proposal = {
         rulesId: 0,
         voterRewardPartE12: toE12(0.001),
@@ -568,7 +568,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
     });
     describe('ClaimReward', () => {
-      const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+      const description = 'Abax will be the best ;-)';
       const proposal: Proposal = {
         rulesId: 0,
         voterRewardPartE12: toE12(0.001),
@@ -614,7 +614,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
     });
     describe('Execute', () => {
-      const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+      const description = 'Abax will be the best ;-)';
       const proposal: Proposal = {
         rulesId: 0,
         voterRewardPartE12: toE12(0.001),
@@ -683,7 +683,7 @@ makeSuite('Governor tests', (getTestEnv) => {
       });
     });
     describe('Execute Proposal with transactions', () => {
-      const description: number[] = Array.from(encoder.encode('Abax will be the best ;-)'), (v) => Number(v));
+      const description = 'Abax will be the best ;-)';
       let proposal: Proposal;
 
       let proposalId: number[];

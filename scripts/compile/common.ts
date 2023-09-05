@@ -12,11 +12,14 @@ export const createFileWithDirectoriesSync = (filePath: string, data: string) =>
 
 export const compileContract = async (contractPath: string) => {
   const command = 'cargo';
-  const args = ['+nightly', 'contract', 'build'];
+  const args = ['contract', 'build'];
   console.log(`running ${command} ${args.join(' ')}...`);
 
   return new Promise<number>((resolve, reject) => {
-    const process = spawn(command, args, { cwd: contractPath, stdio: 'inherit' });
+    const process = spawn(command, args, {
+      cwd: contractPath,
+      stdio: 'inherit',
+    });
     process.stdout?.on('data', (data) => {
       console.log(data);
     });

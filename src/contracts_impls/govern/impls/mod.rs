@@ -1,11 +1,12 @@
 pub mod storage;
-pub use storage::*;
 
-use self::storage::GovernStorage;
 use crate::contracts_impls::{
     govern::traits::*,
     stake::{
-        impls::{StakeCounterStorage, StakeStorage, StakeTimesStorage, E12},
+        impls::{
+            storage::{StakeCounterStorage, StakeStorage, StakeTimesStorage},
+            E12,
+        },
         traits::{
             EmitStakeEvents, MathError, StakeCounterInternal, StakeInternal, StakeTimesInternal,
         },
@@ -25,6 +26,8 @@ use openbrush::{
     modifiers,
     traits::{AccountId, Balance, Hash, Storage, String, Timestamp},
 };
+
+pub use self::storage::{GovernRewardableSlashableStorage, GovernStorage};
 
 pub struct CallInput<'a>(&'a [u8]);
 impl<'a> scale::Encode for CallInput<'a> {
@@ -84,7 +87,7 @@ impl<
     /// `state` - of key hash(`proposal`, hash(`description`)) is set to inital state
     fn propose(&mut self, proposal: Proposal, description: String) -> Result<(), GovernError> {
         self._check_rules(&proposal)?;
-        let description_hash = Self::env().hash_bytes::<Blake2x256>(&description);
+        let description_hash = Self::env().hash_bytes::<Blake2x256>(&description.as_bytes());
         let proposal_id = self._hash_proposal(&proposal, &description_hash);
 
         self._register_proposal(&proposal_id, &proposal, &description)?;

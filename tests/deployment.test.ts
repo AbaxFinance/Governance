@@ -6,6 +6,7 @@ import GovernanceToken from 'typechain/contracts/governance_token';
 import { TestEnv, makeSuite } from './utlis/make-suite';
 import { BURNER, DAY, E12, E21, MINTER } from 'scripts/types_and_consts';
 import { expect } from './setup/chai';
+import { deployGovernanceToken } from 'tests/setup/deploymentHelpers';
 
 makeSuite('Contract setup tests', (getTestEnv) => {
   let testEnv: TestEnv;
@@ -39,16 +40,20 @@ makeSuite('Contract setup tests', (getTestEnv) => {
           });
         });
         describe(`psp22::metadata::data`, () => {
+          let govToken2: GovernanceToken;
+          beforeEach(async () => {
+            govToken2 = await deployGovernanceToken(testEnv.deployer, E21.toString(), 'ABAXname', 'ABAXsymbol', 12);
+          });
           it(`token name`, async () => {
-            const queryRes = (await govToken.query.tokenName()).value.ok!;
-            expect(queryRes).to.be.equal(('0x' + Buffer.from('ABAX', 'utf8').toString('hex')) as any as number[]);
+            const queryRes = (await govToken2.query.tokenName()).value.ok!;
+            expect(queryRes).to.be.equal('ABAXname');
           });
           it(`token symbol`, async () => {
-            const queryRes = (await govToken.query.tokenSymbol()).value.ok!;
-            expect(queryRes).to.be.equal(('0x' + Buffer.from('ABAX', 'utf8').toString('hex')) as any as number[]);
+            const queryRes = (await govToken2.query.tokenSymbol()).value.ok!;
+            expect(queryRes).to.be.equal('ABAXsymbol');
           });
           it(`token decimals`, async () => {
-            const queryRes = (await govToken.query.tokenDecimals()).value.ok!;
+            const queryRes = (await govToken2.query.tokenDecimals()).value.ok!;
             expect(queryRes).to.be.equal(12);
           });
         });
