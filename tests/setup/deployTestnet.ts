@@ -4,6 +4,8 @@ import chalk from 'chalk';
 import { apiProviderWrapper } from 'tests/setup/helpers';
 import { argvObj } from 'scripts/compile/common';
 import Keyring from '@polkadot/keyring';
+import { ReturnNumber } from '@727-ventures/typechain-types';
+import { DAY } from 'scripts/types_and_consts';
 
 (async (args: Record<string, string>) => {
   if (require.main !== module) return;
@@ -23,7 +25,25 @@ import Keyring from '@polkadot/keyring';
   const deployer = keyring.createFromUri(seed, {}, 'sr25519');
   const deployPath = path.join(outputJsonFolder, 'deployedContracts.azero.testnet.json');
 
-  await deployAndConfigureSystem({ shouldUseMockTimestamp, deployer }, deployPath);
+  await deployAndConfigureSystem(
+    {
+      shouldUseMockTimestamp,
+      deployer,
+      governorConfig: {
+        rules: {
+          minimumStakePartE12: 0, //toE12(0.01),
+          deposit: new ReturnNumber(0), // TODO toE12(1000),
+          initialPeriod: 1 * DAY, //3 * DAY,
+          flatPeriod: 2 * DAY, //7 * DAY,
+          finalPeriod: 1 * DAY, //4 * DAY,
+          maximalVoterRewardPartE12: 0, //toE12(0.05),
+          voterSlashPartE12: 0, //toE12(0.2),
+          proposerSlashPartE12: 0, //toE12(0.5),
+        },
+      },
+    },
+    deployPath,
+  );
   api.disconnect();
   process.exit(0);
 })(argvObj).catch((e) => {

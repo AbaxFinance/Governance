@@ -12,7 +12,12 @@ import { argvObj } from 'scripts/compile/common';
   const api = await apiProviderWrapper.getAndWaitForReady();
   const deployPath = path.join(outputJsonFolder, 'tests/setup/deployedContracts.json');
 
-  await deployAndConfigureSystem({ shouldUseMockTimestamp }, deployPath);
+  await deployAndConfigureSystem(
+    {
+      shouldUseMockTimestamp,
+    },
+    deployPath,
+  );
   api.disconnect();
   process.exit(0);
 })(argvObj).catch((e) => {

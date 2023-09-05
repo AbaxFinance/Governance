@@ -22,6 +22,7 @@ import GovernanceTokenMinter from 'typechain/contracts/governance_token_minter';
 import { AccountId, BURNER, Balance, DAY, E21, MINTER, Option, Timestamp } from 'scripts/types_and_consts';
 import { ProposalRules } from 'typechain/types-returns/governor';
 import { ReturnNumber } from '@727-ventures/typechain-types';
+import { merge } from 'lodash';
 
 const getCodePromise = (api: ApiPromise, contractName: string): CodePromise => {
   const abi = JSON.parse(readFileSync(`./artifacts/${contractName}.json`).toString());
@@ -285,14 +286,14 @@ export type StakerConfig = {
 };
 
 export const defaultProposalRules: ProposalRules = {
-  minimumStakePartE12: 0, //toE12(0.01),
+  minimumStakePartE12: toE12(0.01),
   deposit: new ReturnNumber(0), // TODO toE12(1000),
-  initialPeriod: 1 * DAY, //3 * DAY,
-  flatPeriod: 2 * DAY, //7 * DAY,
-  finalPeriod: 1 * DAY, //4 * DAY,
-  maximalVoterRewardPartE12: 0, //toE12(0.05),
-  voterSlashPartE12: 0, //toE12(0.2),
-  proposerSlashPartE12: 0, //toE12(0.5),
+  initialPeriod: 3 * DAY,
+  flatPeriod: 7 * DAY,
+  finalPeriod: 4 * DAY,
+  maximalVoterRewardPartE12: toE12(0.05),
+  voterSlashPartE12: toE12(0.2),
+  proposerSlashPartE12: toE12(0.5),
 };
 
 export const defaultGovernorConfig = {
@@ -339,15 +340,15 @@ export const defaultDeploymentConfig: DeploymentConfig = {
   govTokenConfig: defaultGovTokenConfig,
   stakerConfig: defaultStakerConfig,
 };
+type RecursivePartial<T> = {
+  [P in keyof T]?: T[P] extends (infer U)[] ? RecursivePartial<U>[] : T[P] extends object | undefined ? RecursivePartial<T[P]> : T[P];
+};
 
 export const deployAndConfigureSystem = async (
-  deploymentConfigOverrides: Partial<DeploymentConfig> = defaultDeploymentConfig,
+  deploymentConfigOverrides: RecursivePartial<DeploymentConfig> = defaultDeploymentConfig,
   saveConfigToFilePath?: string,
 ): Promise<TestEnv> => {
-  const config: DeploymentConfig = {
-    ...defaultDeploymentConfig,
-    ...deploymentConfigOverrides,
-  };
+  const config: DeploymentConfig = merge(defaultDeploymentConfig, deploymentConfigOverrides);
 
   const { deployer, users } = config;
 
