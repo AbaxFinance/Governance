@@ -1,14 +1,18 @@
 use ink::prelude::vec::*;
-use openbrush::traits::{AccountId, Balance, Timestamp};
-use scale::{Decode, Encode};
+use openbrush::traits::{
+    AccountId,
+    Balance,
+    Timestamp,
+};
+use scale::{
+    Decode,
+    Encode,
+};
 
 use super::RulesId;
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode, Default)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 
 pub struct ProposalRules {
     /// minimal part of proposer stake in total stake to propose.
@@ -30,10 +34,7 @@ pub struct ProposalRules {
 }
 
 #[derive(Debug, Clone, PartialEq, Encode, Decode)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct Transaction {
     /// The `AccountId` of the contract that is called in this transaction.
     pub callee: AccountId,
@@ -47,10 +48,7 @@ pub struct Transaction {
 
 /// A Proposal is what can be proposed
 #[derive(Debug, Clone, PartialEq, Encode, Decode)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct Proposal {
     /// The rules chosen for this proposal
     pub rules_id: RulesId,
@@ -61,10 +59,7 @@ pub struct Proposal {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub enum ProposalStatus {
     /// VotingPeriod
     Active,
@@ -79,10 +74,7 @@ pub enum ProposalStatus {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct ProposalState {
     /// proposal status
     pub status: ProposalStatus,
@@ -109,10 +101,7 @@ pub struct ProposalState {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 /// Possibilities to choose during voting
 pub enum Vote {
     /// Agree
@@ -124,10 +113,7 @@ pub enum Vote {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct UserVote {
     /// chosen Vote by user
     pub vote: Vote,

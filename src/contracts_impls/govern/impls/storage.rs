@@ -8,7 +8,6 @@ use crate::contracts_impls::govern::traits::{
     ProposalId,
     RulesId,
 };
-use ink::prelude::vec::Vec;
 pub const STORAGE_KEY: u32 = openbrush::storage_unique_key!(GovernStorage);
 #[derive(Debug, Default)]
 #[openbrush::upgradeable_storage(STORAGE_KEY)]
@@ -18,7 +17,6 @@ pub struct GovernStorage {
     pub allowed_rules: Mapping<RulesId, ()>,
     pub next_rule_id: RulesId,
     // data
-    pub proposal_ids: Vec<ProposalId>,
     pub active_proposals: u32,
     pub finalized_proposals: u32,
     pub state: Mapping<ProposalId, ProposalState>,
