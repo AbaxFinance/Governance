@@ -4,9 +4,12 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 set -e
 
 start_time=$(date +%s.%3N)
-script -efq $SCRIPT_DIR/build.log -c \
-"env CARGO_TERM_COLOR=always npx ts-node $SCRIPT_DIR/scripts/compile/compileAllContracts.ts $* \
-    2>&1 | sed -n -E '/profiles for the non root.*|package:.*|workspace:.*/!p'; exit \"\${PIPESTATUS[0]}\""
+
+#TODO restore build log
+# script -efq $SCRIPT_DIR/build.log -c \
+# "env CARGO_TERM_COLOR=always npx ts-node $SCRIPT_DIR/scripts/compile/compileAllContracts.ts $* \
+#     2>&1 | sed -n -E '/profiles for the non root.*|package:.*|workspace:.*/!p'; exit \"\${PIPESTATUS[0]}\""
+env CARGO_TERM_COLOR=always npx ts-node $SCRIPT_DIR/scripts/compile/compileAllContracts.ts $* 2>&1 | sed -n -E '/profiles for the non root.*|package:.*|workspace:.*/!p'
 
 yarn generateTypes
 end_time=$(date +%s.%3N)
