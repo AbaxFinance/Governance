@@ -3,15 +3,21 @@
 #[openbrush::contract]
 pub mod hasher {
 
-    use abax_governance::contracts_impls::govern::traits::Proposal;
-    use abax_governance::contracts_impls::stake::traits::*;
+    use abax_governance::contracts_impls::{
+        govern::traits::Proposal,
+        stake::traits::*,
+    };
 
     // imports from ink!
-    use ink::env::hash::Blake2x256;
-    use ink::prelude::vec;
+    use ink::{
+        env::hash::Blake2x256,
+        prelude::vec,
+    };
     // imports from openbrush
-    use openbrush::traits::Storage;
-    use openbrush::traits::String;
+    use openbrush::traits::{
+        Storage,
+        String,
+    };
 
     #[ink(storage)]
     #[derive(Default, Storage)]
@@ -24,11 +30,7 @@ pub mod hasher {
         }
 
         #[ink(message)]
-        pub fn hash_proposal_with_description(
-            &self,
-            proposal: Proposal,
-            description: String,
-        ) -> Hash {
+        pub fn hash_proposal_with_description(&self, proposal: Proposal, description: String) -> Hash {
             ink::env::debug_println!("hash_proposal_with_description | START");
             let description_hash = Self::env().hash_bytes::<Blake2x256>(&description.as_bytes());
 

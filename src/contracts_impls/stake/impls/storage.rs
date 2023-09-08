@@ -1,6 +1,10 @@
 use openbrush::{
     storage::Mapping,
-    traits::{AccountId, Balance, Timestamp},
+    traits::{
+        AccountId,
+        Balance,
+        Timestamp,
+    },
 };
 
 use crate::contracts_impls::stake::traits::*;
@@ -9,7 +13,7 @@ pub const STORAGE_KEY: u32 = openbrush::storage_unique_key!(StakeStorage);
 #[derive(Debug)]
 #[openbrush::upgradeable_storage(STORAGE_KEY)]
 pub struct StakeStorage {
-    //immuatables
+    // immuatables
     pub want: AccountId,
     // parameters
     pub unstake_period: Timestamp,

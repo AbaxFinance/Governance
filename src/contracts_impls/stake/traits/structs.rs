@@ -1,11 +1,14 @@
-use openbrush::traits::{Balance, Timestamp};
-use scale::{Decode, Encode};
+use openbrush::traits::{
+    Balance,
+    Timestamp,
+};
+use scale::{
+    Decode,
+    Encode,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode, Default)]
-#[cfg_attr(
-    feature = "std",
-    derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 
 /// Represents the initialized by an account unstake of `amount` started at `init_time`.
 pub struct Unstake {

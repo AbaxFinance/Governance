@@ -3,7 +3,11 @@ pub use storage::*;
 
 use crate::contracts_impls::timestamp_mock::traits::*;
 
-use openbrush::traits::{AccountId, Storage, Timestamp};
+use openbrush::traits::{
+    AccountId,
+    Storage,
+    Timestamp,
+};
 impl<T: Storage<TimestampMockStorage>> TimestampMock for T {
     fn set_timestamp_provider(&mut self, account: AccountId) {
         self.data::<TimestampMockStorage>().timestamp_provider = account;

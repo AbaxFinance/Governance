@@ -5,9 +5,15 @@
 pub mod block_timestamp_provider {
     use abax_governance::contracts_impls::timestamp_mock::traits::*;
     use openbrush::{
-        contracts::ownable::{OwnableError, *},
+        contracts::ownable::{
+            OwnableError,
+            *,
+        },
         modifiers,
-        traits::{DefaultEnv, Storage},
+        traits::{
+            DefaultEnv,
+            Storage,
+        },
     };
 
     #[ink(storage)]
@@ -36,9 +42,9 @@ pub mod block_timestamp_provider {
         #[ink(message)]
         fn get_block_timestamp(&self) -> u64 {
             if self.should_return_mock_value {
-                return self.mock_timestamp;
+                return self.mock_timestamp
             }
-            return Self::env().block_timestamp();
+            return Self::env().block_timestamp()
         }
         #[ink(message)]
         #[modifiers(only_owner)]
@@ -54,10 +60,7 @@ pub mod block_timestamp_provider {
         }
         #[ink(message)]
         #[modifiers(only_owner)]
-        fn set_should_return_mock_value(
-            &mut self,
-            should_return_mock_value: bool,
-        ) -> Result<(), OwnableError> {
+        fn set_should_return_mock_value(&mut self, should_return_mock_value: bool) -> Result<(), OwnableError> {
             self.should_return_mock_value = should_return_mock_value;
             Ok(())
         }

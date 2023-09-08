@@ -1,7 +1,16 @@
-use openbrush::contracts::{ownable::OwnableError, psp22::PSP22Error};
-use scale::{Decode, Encode};
+use openbrush::contracts::{
+    ownable::OwnableError,
+    psp22::PSP22Error,
+};
+use scale::{
+    Decode,
+    Encode,
+};
 
-use crate::contracts_impls::stake::traits::{MathError, StakeError};
+use crate::contracts_impls::stake::traits::{
+    MathError,
+    StakeError,
+};
 
 #[derive(Encode, Decode, Debug)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]

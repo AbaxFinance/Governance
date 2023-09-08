@@ -4,12 +4,19 @@ pub mod structs;
 
 pub use errors::*;
 pub use events::*;
-pub use openbrush::traits::{AccountId, Balance, Timestamp};
+pub use openbrush::traits::{
+    AccountId,
+    Balance,
+    Timestamp,
+};
 pub use structs::*;
 
 pub type UnstakeId = u32;
 
-pub use ink::prelude::{vec, vec::*};
+pub use ink::prelude::{
+    vec,
+    vec::*,
+};
 
 #[openbrush::trait_definition]
 pub trait StakeView {
@@ -39,11 +46,7 @@ pub trait StakeView {
 
     /// Returns the stake of an `account` plus aomunt of tokens initialized for unstake after `timestamp` and not yet unstaken.
     #[ink(message)]
-    fn stake_and_unstakes_initialized_after(
-        &self,
-        account: AccountId,
-        timestamp: Timestamp,
-    ) -> Balance;
+    fn stake_and_unstakes_initialized_after(&self, account: AccountId, timestamp: Timestamp) -> Balance;
 
     /// Returns the list of registered unstakes in orded from the earliest to the oldest.
     #[ink(message)]
@@ -121,10 +124,7 @@ pub trait StakeManage {
     ///
     /// Returns `OwnableError` if onwer required and the `caller` is not the owner.
     #[ink(message)]
-    fn change_maximal_number_of_unstakes(
-        &mut self,
-        maximal_number_of_unstakes: u64,
-    ) -> Result<(), StakeError>;
+    fn change_maximal_number_of_unstakes(&mut self, maximal_number_of_unstakes: u64) -> Result<(), StakeError>;
 }
 
 #[openbrush::trait_definition]
@@ -189,11 +189,7 @@ pub trait StakeInternal {
     fn _stake_of(&self, account: &AccountId) -> Option<Balance>;
 
     /// Returns the amount of staked tokens by specified `account` plus all unstakes done after `timestamp`.
-    fn _stake_and_unstakes_initialized_after(
-        &self,
-        account: &AccountId,
-        timestamp: &Timestamp,
-    ) -> Balance;
+    fn _stake_and_unstakes_initialized_after(&self, account: &AccountId, timestamp: &Timestamp) -> Balance;
 
     /// Returns the list of registered unstakes in orded from the earliest to the oldest.
     fn _initialized_unstakes_of(&self, account: &AccountId) -> Vec<Unstake>;
@@ -202,41 +198,25 @@ pub trait StakeInternal {
     ///
     /// # Errors
     /// Returns `MathError::Add` if overflow happens.
-    fn _increase_stake_of(
-        &mut self,
-        account: &AccountId,
-        amount: &Balance,
-    ) -> Result<(), StakeError>;
+    fn _increase_stake_of(&mut self, account: &AccountId, amount: &Balance) -> Result<(), StakeError>;
 
     /// Decrease stake of `account` by `amount`.
     ///
     /// # Errors
     /// Returns `InsufficientStake` error if the `stakes` of key `account` is lesser than `amount`.
-    fn _decrease_stake_of(
-        &mut self,
-        account: &AccountId,
-        amount: &Balance,
-    ) -> Result<(), StakeError>;
+    fn _decrease_stake_of(&mut self, account: &AccountId, amount: &Balance) -> Result<(), StakeError>;
 
     /// Decrease unstakes of `account` by `amount`.
     ///
     /// # Errors
     /// Returns `InsufficientStake` error if the `stakes` of key `account` is lesser than `amount`.
-    fn _decrease_unstakes_of(
-        &mut self,
-        account: &AccountId,
-        amount: &Balance,
-    ) -> Result<Balance, StakeError>;
+    fn _decrease_unstakes_of(&mut self, account: &AccountId, amount: &Balance) -> Result<Balance, StakeError>;
 
     /// Registers new unstake of `amount` for `account`
     ///
     /// # Errors
     /// Returns `ToManyUnstakes` if `account` has reached maximum number of unstakes
-    fn _register_unstake(
-        &mut self,
-        account: &AccountId,
-        amount: &Balance,
-    ) -> Result<(), StakeError>;
+    fn _register_unstake(&mut self, account: &AccountId, amount: &Balance) -> Result<(), StakeError>;
 
     /// Removes all ready to unstake (unstakes for which unstaking period has passed) from storage.
     ///
@@ -269,10 +249,7 @@ pub trait StakeInternal {
     ///
     /// # Error
     /// Returns `Ownable` or `AccessControl` Errors
-    fn _change_maximal_number_of_unstakes(
-        &mut self,
-        maximal_number_of_unstakes: &u64,
-    ) -> Result<(), StakeError>;
+    fn _change_maximal_number_of_unstakes(&mut self, maximal_number_of_unstakes: &u64) -> Result<(), StakeError>;
 }
 
 pub trait StakeTimesInternal {

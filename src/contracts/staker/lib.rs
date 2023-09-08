@@ -3,19 +3,30 @@
 #[openbrush::contract]
 pub mod staker {
 
-    use abax_governance::contracts_impls::stake::impls::StakeCounterStorage;
-    use abax_governance::contracts_impls::stake::impls::StakeStorage;
-    use abax_governance::contracts_impls::stake::impls::StakeTimesStorage;
-    use abax_governance::contracts_impls::stake::traits::*;
+    use abax_governance::contracts_impls::stake::{
+        impls::{
+            StakeCounterStorage,
+            StakeStorage,
+            StakeTimesStorage,
+        },
+        traits::*,
+    };
 
-    use abax_governance::contracts_impls::timestamp_mock::impls::TimestampMockStorage;
-    use abax_governance::contracts_impls::timestamp_mock::traits::*;
+    use abax_governance::contracts_impls::timestamp_mock::{
+        impls::TimestampMockStorage,
+        traits::*,
+    };
 
     // imports from ink!
-    use ink::codegen::{EmitEvent, Env};
+    use ink::codegen::{
+        EmitEvent,
+        Env,
+    };
     // imports from openbrush
-    use openbrush::contracts::ownable::*;
-    use openbrush::traits::Storage;
+    use openbrush::{
+        contracts::ownable::*,
+        traits::Storage,
+    };
 
     #[ink(storage)]
     #[derive(Default, Storage)]
@@ -46,15 +57,9 @@ pub mod staker {
 
     impl Staker {
         #[ink(constructor)]
-        pub fn new(
-            want: AccountId,
-            unstake_period: Timestamp,
-            maximal_number_of_initialized_unstakes: u64,
-        ) -> Self {
+        pub fn new(want: AccountId, unstake_period: Timestamp, maximal_number_of_initialized_unstakes: u64) -> Self {
             let mut _instance = Self::default();
-            _instance
-                .ownable
-                ._init_with_owner(_instance.env().account_id());
+            _instance.ownable._init_with_owner(_instance.env().account_id());
 
             _instance.stake.want = want;
             _instance.stake.unstake_period = unstake_period;
@@ -72,11 +77,7 @@ pub mod staker {
     }
 
     impl ownable::Internal for Staker {
-        fn _emit_ownership_transferred_event(
-            &self,
-            previous: Option<AccountId>,
-            new: Option<AccountId>,
-        ) {
+        fn _emit_ownership_transferred_event(&self, previous: Option<AccountId>, new: Option<AccountId>) {
             EmitEvent::<Staker>::emit_event(self.env(), OwnershipTransferred { previous, new })
         }
     }
