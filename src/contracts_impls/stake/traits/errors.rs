@@ -15,6 +15,7 @@ pub enum StakeError {
     LangError(LangError),
     MathError(MathError),
     AmountIsZero,
+    AmountGreaterThanStake,
     InsufficientStake,
     UnstakeNotInitialized,
     NoInitializedUnstakes,

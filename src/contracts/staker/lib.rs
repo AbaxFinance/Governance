@@ -3,13 +3,16 @@
 #[openbrush::contract]
 pub mod staker {
 
-    use abax_governance::contracts_impls::stake::{
-        impls::{
-            StakeCounterStorage,
-            StakeStorage,
-            StakeTimesStorage,
+    use abax_governance::contracts_impls::{
+        stake,
+        stake::{
+            impls::storage::data::{
+                StakeCounterStorage,
+                StakeStorage,
+                StakeTimesStorage,
+            },
+            traits::*,
         },
-        traits::*,
     };
 
     use abax_governance::contracts_impls::timestamp_mock::{

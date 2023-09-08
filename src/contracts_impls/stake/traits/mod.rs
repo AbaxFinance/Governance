@@ -170,63 +170,6 @@ pub trait StakeTransfer {
 }
 
 pub trait StakeInternal {
-    /// Returns the AccountId of PSP22 token that can be staked.
-    fn _want(&self) -> AccountId;
-
-    /// Returns the time that must pass between initialize_unstake and unstake.
-    fn _unstake_period(&self) -> Timestamp;
-
-    /// Returns the maximal number of active unstakes account can have.
-    fn _maximal_number_of_unstakes(&self) -> u64;
-
-    /// Returns the amount of tokens that are staked, including tokens that are initialized for unstaking.
-    fn _total_stake(&self) -> Balance;
-
-    /// Returns the amount of tokens that are initialized for unstaking.
-    fn _total_unstake(&self) -> Balance;
-
-    /// Returns the amount of staked tokens by specified `account`.
-    fn _stake_of(&self, account: &AccountId) -> Option<Balance>;
-
-    /// Returns the amount of staked tokens by specified `account` plus all unstakes done after `timestamp`.
-    fn _stake_and_unstakes_initialized_after(&self, account: &AccountId, timestamp: &Timestamp) -> Balance;
-
-    /// Returns the list of registered unstakes in orded from the earliest to the oldest.
-    fn _initialized_unstakes_of(&self, account: &AccountId) -> Vec<Unstake>;
-
-    /// Increase stake of `account` by `amount`.
-    ///
-    /// # Errors
-    /// Returns `MathError::Add` if overflow happens.
-    fn _increase_stake_of(&mut self, account: &AccountId, amount: &Balance) -> Result<(), StakeError>;
-
-    /// Decrease stake of `account` by `amount`.
-    ///
-    /// # Errors
-    /// Returns `InsufficientStake` error if the `stakes` of key `account` is lesser than `amount`.
-    fn _decrease_stake_of(&mut self, account: &AccountId, amount: &Balance) -> Result<(), StakeError>;
-
-    /// Decrease unstakes of `account` by `amount`.
-    ///
-    /// # Errors
-    /// Returns `InsufficientStake` error if the `stakes` of key `account` is lesser than `amount`.
-    fn _decrease_unstakes_of(&mut self, account: &AccountId, amount: &Balance) -> Result<Balance, StakeError>;
-
-    /// Registers new unstake of `amount` for `account`
-    ///
-    /// # Errors
-    /// Returns `ToManyUnstakes` if `account` has reached maximum number of unstakes
-    fn _register_unstake(&mut self, account: &AccountId, amount: &Balance) -> Result<(), StakeError>;
-
-    /// Removes all ready to unstake (unstakes for which unstaking period has passed) from storage.
-    ///
-    /// # Returns
-    /// `Balance` - summed amound of removed unstakes
-    ///
-    /// # Errors
-    /// None - ?
-    fn _deregister_ready_unstakes(&mut self, account: &AccountId) -> Result<Balance, StakeError>;
-
     /// Rewards `account` by increasing its stake by `amount`. Calls `on_reward` method.
     ///
     /// # Errors
@@ -238,18 +181,6 @@ pub trait StakeInternal {
     /// # Errors
     /// Returns `AmountIsZero` if `amount is 0.
     fn _slash(&mut self, account: &AccountId, amount: &Balance) -> Result<Balance, StakeError>;
-
-    /// Changes `unstake_period`
-    ///
-    /// # Error
-    /// Returns `Ownable` or `AccessControl` Errors
-    fn _change_unstake_period(&mut self, unstake_period: &Timestamp) -> Result<(), StakeError>;
-
-    /// Changes `maximal_number_of_usntakes`
-    ///
-    /// # Error
-    /// Returns `Ownable` or `AccessControl` Errors
-    fn _change_maximal_number_of_unstakes(&mut self, maximal_number_of_unstakes: &u64) -> Result<(), StakeError>;
 }
 
 pub trait StakeTimesInternal {

@@ -3,8 +3,9 @@ pub mod storage;
 use crate::contracts_impls::{
     govern::traits::*,
     stake::{
+        impls,
         impls::{
-            storage::{
+            storage::data::{
                 StakeCounterStorage,
                 StakeStorage,
                 StakeTimesStorage,
@@ -162,7 +163,9 @@ impl<
         let state = self._state_of(&proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
         ink::env::debug_println!("vote | pull data");
 
-        let amount = self._stake_and_unstakes_initialized_after(&caller, &state.start);
+        let amount = self
+            .data::<StakeStorage>()
+            .stake_and_unstakes_initialized_after(&caller, &state.start);
         self._update_vote_of_for(&caller, &proposal_id, &vote, &amount)?;
         ink::env::debug_println!("vote | STOP");
 
@@ -296,11 +299,11 @@ impl<
         }
 
         let proposer_part_e12 = u64::try_from(
-            self._stake_of(&Self::env().caller())
-                .unwrap_or_default()
+            self.data::<StakeStorage>()
+                .stake_of(&Self::env().caller())
                 .checked_mul(E12)
                 .ok_or(MathError::Mul)?
-                / self._total_stake(),
+                / self.data::<StakeStorage>().total_stake,
         )
         .unwrap_or(0);
 
@@ -337,7 +340,7 @@ impl<
 
         let timestamp = self._timestamp();
         let counter_at_start = self._counter_stake();
-        let votes_at_start = self._total_stake();
+        let votes_at_start = self.data::<StakeStorage>().total_stake;
         let caller = Self::env().caller();
         self.data::<GovernStorage>().state.insert(
             &proposal_id,
@@ -378,7 +381,8 @@ impl<
     }
 
     fn _get_votes_at(&self, account: &AccountId, timestamp: &Timestamp) -> Balance {
-        self._stake_and_unstakes_initialized_after(account, timestamp)
+        self.data::<StakeStorage>()
+            .stake_and_unstakes_initialized_after(account, timestamp)
     }
 
     /// # Storage modifications
@@ -526,7 +530,8 @@ impl<
                 state.status = ProposalStatus::DefeatedWithSlash;
                 let slash_part_e12 = rules.proposer_slash_part_e12 as u128;
                 let slash_amount = self
-                    ._stake_and_unstakes_initialized_after(&state.proposer, &state.start)
+                    .data::<StakeStorage>()
+                    .stake_and_unstakes_initialized_after(&state.proposer, &state.start)
                     .checked_mul(slash_part_e12)
                     .ok_or(MathError::Mul)?
                     / E12;
@@ -721,7 +726,9 @@ impl<
             return Err(GovernError::Voted)
         };
 
-        let stake_at_start = self._stake_and_unstakes_initialized_after(account, &state.start);
+        let stake_at_start = self
+            .data::<StakeStorage>()
+            .stake_and_unstakes_initialized_after(account, &state.start);
 
         let penalty = stake_at_start
             .checked_mul(rules.voter_slash_part_e12 as u128)

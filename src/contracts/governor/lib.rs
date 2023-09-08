@@ -19,7 +19,7 @@ pub mod governor {
             },
         },
         stake::{
-            impls::{
+            impls::storage::data::{
                 StakeCounterStorage,
                 StakeStorage,
                 StakeTimesStorage,
@@ -91,12 +91,10 @@ pub mod governor {
             _instance.ownable._init_with_owner(_instance.env().account_id());
 
             _instance.stake.want = want;
+            _instance.stake.change_unstake_period(&unstake_period);
             _instance
-                ._change_unstake_period(&unstake_period)
-                .expect("unstake_period");
-            _instance
-                ._change_maximal_number_of_unstakes(&maximal_number_of_unstakes)
-                .expect("maximal_number_of_unstakes");
+                .stake
+                .change_maximal_number_of_unstakes(&maximal_number_of_unstakes);
             _instance._add_new_rule(&rules).expect("add_new_rule");
             _instance._allow_rules(&0, &true).expect("allow_rule");
             _instance
