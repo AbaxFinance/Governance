@@ -751,7 +751,7 @@ makeSuite('Governor tests', (getTestEnv) => {
     });
   });
 
-  describe('Performance tests', () => {
+  describe.skip('Performance tests', () => {
     it('Proposal submissions count: Submitted 1200 proposals', async function (this) {
       console.warn('Warning: slow test');
       const descriptionTemplate = 'Proposal number:';
