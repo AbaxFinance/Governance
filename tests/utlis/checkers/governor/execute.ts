@@ -45,8 +45,7 @@ export async function executeAndCheck(
     return;
   }
 
-  const proposalId = hexToNumbers(((await governor.query.hashProposal(proposal, description)).value.ok as string).substring(2)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
-
+  const proposalId = hexToNumbers(((await governor.query.hashProposal(proposal, descriptionHash)).value.ok as string).substring(2));
   const storageStateBefore: ExecuteStorageModifications = await getExecuteStorageModifications(governor, proposalId);
 
   const tx = governor.withSigner(caller).tx.execute(proposal, descriptionHash);

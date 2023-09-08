@@ -93,7 +93,10 @@ impl<
         self._transfer_in(&caller, &amount)?;
 
         self._update_stake_timestamps_of(&caller);
+        ink::env::debug_println!("Staking amount: {}", amount);
+        ink::env::debug_println!("Stake before: {}", self.data::<StakeStorage>().stake_of(&caller));
         self.data::<StakeStorage>().increase_stake_of(&caller, &amount)?;
+        ink::env::debug_println!("Stake after: {}", self.data::<StakeStorage>().stake_of(&caller));
         self.data::<StakeStorage>().increase_total_stake(&amount)?;
         self._increase_counter(&amount);
 

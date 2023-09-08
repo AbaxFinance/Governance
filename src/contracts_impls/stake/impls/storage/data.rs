@@ -42,6 +42,13 @@ impl Default for StakeStorage {
 }
 
 impl StakeStorage {
+    pub fn stake_of(&self, account: &AccountId) -> Balance {
+        self.stakes.get(account).unwrap_or_default()
+    }
+
+    pub fn initialized_unstakes_of(&self, account: &AccountId) -> Vec<Unstake> {
+        self.unstakes.get(account).unwrap_or_default()
+    }
     pub fn change_unstake_period(&mut self, unstake_period: &Timestamp) {
         if self.unstake_period != *unstake_period {
             self.unstake_period = *unstake_period;
@@ -52,14 +59,6 @@ impl StakeStorage {
         if self.maximal_number_of_unstakes != *maximal_number_of_unstakes {
             self.maximal_number_of_unstakes = *maximal_number_of_unstakes;
         }
-    }
-
-    pub fn stake_of(&self, account: &AccountId) -> Balance {
-        self.stakes.get(account).unwrap_or_default()
-    }
-
-    pub fn initialized_unstakes_of(&self, account: &AccountId) -> Vec<Unstake> {
-        self.unstakes.get(account).unwrap_or_default()
     }
 
     pub fn increase_total_stake(&mut self, amount: &Balance) -> Result<(), MathError> {
