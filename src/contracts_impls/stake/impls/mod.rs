@@ -34,7 +34,7 @@ use self::storage::data::{
 
 pub const E12: u128 = 1_000_000_000_000;
 
-impl<T: Storage<StakeStorage> + StakeInternal + StakeTransfer> StakeView for T {
+pub trait StakeViewImpl: Storage<StakeStorage> + StakeInternal + StakeTransfer {
     fn want(&self) -> AccountId {
         self.data::<StakeStorage>().want
     }
@@ -67,57 +67,32 @@ impl<T: Storage<StakeStorage> + StakeInternal + StakeTransfer> StakeView for T {
     }
 }
 
-impl<
-        T: Storage<StakeStorage>
-            + StakeInternal
-            + EmitStakeEvents
-            + Storage<StakeTimesStorage>
-            + StakeTimesInternal
-            + Storage<StakeCounterStorage>
-            + StakeCounterInternal
-            + Storage<TimestampMockStorage>
-            + TimestampMockInternal,
-    > Stake for T
+pub trait StakeImpl:
+    Storage<StakeStorage>
+    + StakeInternal
+    + EmitStakeEvents
+    + Storage<StakeTimesStorage>
+    + Storage<StakeCounterStorage>
+    + Storage<TimestampMockStorage>
+    + TimestampMockInternal
 {
-    /// # Storage modifications
-    /// [StakeStorage]
-    /// `stakes` of key `caller` increased by `amount`.
-    /// `total_stake` increased by `amount`.
-    /// [StakeTimesStorage]
-    /// `stakes_timestamps` of key `caller` If None then set to `block_timestamp`.
-    /// `last_stakes_timestamps` of key `caller` set to `block_timestamp`.
-    /// [StakeCounterStorage]
-    /// `counter` increased by amount.
     fn stake(&mut self, amount: Balance) -> Result<(), StakeError> {
         if amount == 0 {
             return Err(StakeError::AmountIsZero)
         }
         let caller = Self::env().caller();
+        let timestamp = self._timestamp();
         self._transfer_in(&caller, &amount)?;
-        ink::env::debug_println!("true timestamp: {}", Self::env().block_timestamp());
-        ink::env::debug_println!("mocked timestamp: {}", self._timestamp());
-        self._update_stake_timestamps_of(&caller);
-        ink::env::debug_println!("stored: {}", self._last_stake_timestamp_of(&caller).unwrap_or(0));
-        ink::env::debug_println!("Staking amount: {}", amount);
-        ink::env::debug_println!("Stake before: {}", self.data::<StakeStorage>().stake_of(&caller));
+        self.data::<StakeTimesStorage>()
+            .update_stake_timestamps_of(&caller, &timestamp);
         self.data::<StakeStorage>().increase_stake_of(&caller, &amount)?;
-        ink::env::debug_println!("Stake after: {}", self.data::<StakeStorage>().stake_of(&caller));
         self.data::<StakeStorage>().increase_total_stake(&amount)?;
-        self._increase_counter(&amount);
+        self.data::<StakeCounterStorage>().increase_counter(&amount);
 
         self._emit_staked_event(&caller, &amount);
         Ok(())
     }
 
-    /// # Storage modifications
-    /// [StakeStorage]
-    /// `stakes` of key `caller` decreased by `amount` or removed if 0.
-    /// `total_stake` decreased by `amount`.
-    /// `total_unstake` increased by `amount`.
-    /// `unstakes` of key `(caller)` pushed at back of Vec Unstakes { `block_timestamp`, `amount`}.
-    /// [StakeTimesStorage]
-    /// `stakes_timestamps` of key `caller` removed if `stakes` of key `caller` was removed.
-    /// `last_stakes_timestamps` of key `caller` removed if `stakes` of key `caller` was removed.
     fn initialize_unstake(&mut self, amount: Balance) -> Result<(), StakeError> {
         if amount == 0 {
             return Err(StakeError::AmountIsZero)
@@ -128,7 +103,7 @@ impl<
         self.data::<StakeStorage>().decrease_total_stake(&amount)?;
 
         if stake_is_zero {
-            self._remove_stake_timestamps_of(&caller);
+            self.data::<StakeTimesStorage>().remove_stake_timestamps_of(&caller);
         }
         let timestamp = self._timestamp();
         self.data::<StakeStorage>()
@@ -138,11 +113,6 @@ impl<
         Ok(())
     }
 
-    /// # Storage modifications
-    /// [StakeStorage]
-    /// `total_unstake` decreased by `amount`.
-    /// `unstakes` of keys `(caller, unstakes_id.0.."some_id")` removed where "some_id" is first not ready for unstake or non existing.
-    /// "unstakes_id" of key `caller` increased at 0th position to "some_id".
     fn unstake(&mut self) -> Result<Balance, StakeError> {
         let caller = Self::env().caller();
 
@@ -160,23 +130,23 @@ impl<
     }
 }
 
-impl<T: Storage<StakeCounterStorage> + StakeCounterInternal> StakeCounter for T {
+pub trait StakeCounterImpl: Storage<StakeCounterStorage> {
     fn counter_stake(&self) -> Balance {
-        self._counter_stake()
+        self.data::<StakeCounterStorage>().counter_stake
     }
 }
 
-impl<T: Storage<StakeTimesStorage> + StakeTimesInternal> StakeTimes for T {
+pub trait StakeTimesImpl: Storage<StakeTimesStorage> {
     fn stake_timestamp_of(&self, account: AccountId) -> Option<Timestamp> {
-        self._stake_timestamp_of(&account)
+        self.data::<StakeTimesStorage>().stake_timestamp_of(&account)
     }
 
     fn last_stake_timestamp_of(&self, account: AccountId) -> Option<Timestamp> {
-        self._last_stake_timestamp_of(&account)
+        self.data::<StakeTimesStorage>().last_stake_timestamp_of(&account)
     }
 }
 
-impl<T: Storage<StakeStorage> + Storage<ownable::Data> + StakeInternal + EmitStakeEvents> StakeManage for T {
+pub trait StakeManageImpl: Storage<StakeStorage> + Storage<ownable::Data> + StakeInternal + EmitStakeEvents {
     /// # Storage modifications
     /// [StakeStorage]
     /// `unstake_period` set to `unstake_period`
@@ -200,15 +170,12 @@ impl<T: Storage<StakeStorage> + Storage<ownable::Data> + StakeInternal + EmitSta
         Ok(())
     }
 }
-
-impl<
-        T: Storage<StakeStorage>
-            + StakeInternal
-            + Storage<StakeCounterStorage>
-            + StakeCounterInternal
-            + Storage<TimestampMockStorage>
-            + TimestampMockInternal,
-    > StakeRewardable for T
+pub trait StakeRewardableImpl:
+    Storage<StakeStorage>
+    + StakeInternal
+    + Storage<StakeCounterStorage>
+    + Storage<TimestampMockStorage>
+    + TimestampMockInternal
 {
     /// # Storage modifications
     /// [StakeStorage]
@@ -225,14 +192,12 @@ impl<
     }
 }
 
-impl<
-        T: Storage<StakeStorage>
-            + StakeInternal
-            + Storage<StakeTimesStorage>
-            + StakeTimesInternal
-            + Storage<TimestampMockStorage>
-            + TimestampMockInternal,
-    > StakeSlashable for T
+pub trait StakeSlashableImpl:
+    Storage<StakeStorage>
+    + StakeInternal
+    + Storage<StakeTimesStorage>
+    + Storage<TimestampMockStorage>
+    + TimestampMockInternal
 {
     /// # Storage modifications
     /// [StakeStorage]
@@ -256,8 +221,6 @@ impl<
             + Storage<StakeCounterStorage>
             + Storage<StakeTimesStorage>
             + Storage<TimestampMockStorage>
-            + StakeTimesInternal
-            + StakeCounterInternal
             + TimestampMockInternal
             + EmitStakeEvents,
     > StakeInternal for T
@@ -272,7 +235,7 @@ impl<
         self.data::<StakeStorage>().increase_stake_of(&account, &amount)?;
         self.data::<StakeStorage>().increase_total_stake(&amount)?;
 
-        self._increase_counter(&amount);
+        self.data::<StakeCounterStorage>().increase_counter(&amount);
         self._on_reward(&amount)?;
         self._emit_rewarded_event(&account, &amount);
         Ok(())
@@ -298,7 +261,7 @@ impl<
             self.data::<StakeStorage>().decrease_total_stake(amount)?;
             ink::env::debug_println!("m2");
             if stake_is_zero {
-                self._remove_stake_timestamps_of(&account);
+                self.data::<StakeTimesStorage>().remove_stake_timestamps_of(&account);
             }
             self._emit_slashed_event(&account, &(amount));
             return Ok(*amount)
@@ -306,7 +269,7 @@ impl<
             if stake > 0 {
                 self.data::<StakeStorage>().decrease_stake_of(&account, &stake)?;
                 self.data::<StakeStorage>().decrease_total_stake(&stake)?;
-                self._remove_stake_timestamps_of(&account);
+                self.data::<StakeTimesStorage>().remove_stake_timestamps_of(&account);
             }
             let unstake_amount_slashed = self
                 .data::<StakeStorage>()
@@ -321,60 +284,6 @@ impl<
                 Ok(unstake_amount_slashed + stake)
             }
         }
-    }
-}
-
-impl<T: Storage<StakeTimesStorage> + Storage<TimestampMockStorage> + TimestampMockInternal> StakeTimesInternal for T {
-    fn _stake_timestamp_of(&self, account: &AccountId) -> Option<Timestamp> {
-        self.data::<StakeTimesStorage>().stakes_timestamps.get(account)
-    }
-
-    fn _last_stake_timestamp_of(&self, account: &AccountId) -> Option<Timestamp> {
-        self.data::<StakeTimesStorage>().last_stakes_timestamps.get(account)
-    }
-
-    /// # Storage modifications
-    /// [StakeTimesStorage]
-    /// `stakes_timestamps` set to `block_timestamp` if was None.
-    /// `last_stakes_timestamps` set to `block_timestamp`..
-    fn _update_stake_timestamps_of(&mut self, account: &AccountId) {
-        let timestamp = self._timestamp();
-        if self._stake_timestamp_of(account).is_none() {
-            self.data::<StakeTimesStorage>()
-                .stakes_timestamps
-                .insert(account, &timestamp);
-        }
-        self.data::<StakeTimesStorage>()
-            .last_stakes_timestamps
-            .insert(account, &timestamp);
-    }
-
-    /// # Storage modifications
-    /// [StakeTimesStorage]
-    /// `stakes_timestamps` removed.
-    /// `last_stakes_timestamps` removed.
-    fn _remove_stake_timestamps_of(&mut self, account: &AccountId) {
-        self.data::<StakeTimesStorage>().stakes_timestamps.remove(account);
-        self.data::<StakeTimesStorage>().last_stakes_timestamps.remove(account);
-    }
-}
-
-impl<T: Storage<StakeCounterStorage>> StakeCounterInternal for T {
-    fn _counter_stake(&self) -> Balance {
-        self.data::<StakeCounterStorage>().counter_stake
-    }
-
-    /// # Storage modifications
-    /// [StakeCounterStorage]
-    /// `counter_stake` increased by `amount`.
-    fn _increase_counter(&mut self, amount: &Balance) {
-        // allow overflows
-        let new_counter_stake = self
-            .data::<StakeCounterStorage>()
-            .counter_stake
-            .overflowing_add(*amount);
-
-        self.data::<StakeCounterStorage>().counter_stake = new_counter_stake.0;
     }
 }
 

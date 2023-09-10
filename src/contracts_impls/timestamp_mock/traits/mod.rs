@@ -6,7 +6,7 @@ use openbrush::{
     },
 };
 
-#[openbrush::trait_definition]
+#[ink::trait_definition]
 pub trait TimestampMock {
     #[ink(message)]
     fn set_timestamp_provider(&mut self, account: AccountId);

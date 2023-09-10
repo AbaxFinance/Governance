@@ -8,7 +8,7 @@ use openbrush::traits::{
     Storage,
     Timestamp,
 };
-impl<T: Storage<TimestampMockStorage>> TimestampMock for T {
+pub trait TimestampMockImpl: Storage<TimestampMockStorage> {
     fn set_timestamp_provider(&mut self, account: AccountId) {
         self.data::<TimestampMockStorage>().timestamp_provider = account;
     }

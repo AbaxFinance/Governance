@@ -174,15 +174,6 @@ pub trait GovernInternal {
     /// Returns Hash of `proposal` with `description_hash`.
     fn _hash_proposal(&self, proposal: &Proposal, description_hash: &[u8; 32]) -> ProposalId;
 
-    /// Returns rules identified by `rules_id`.
-    fn _rule(&self, rules_id: &RulesId) -> Option<ProposalRules>;
-
-    /// Returns if rules identified by `rules_id` may be used.
-    fn _rule_allowed(&self, rules_id: &RulesId) -> bool;
-
-    /// Returns first unassigned `rules_id`
-    fn _next_rule_id(&self) -> RulesId;
-
     /// Checks if `proposal` and `caller` satisfy rules identified by `proposal.rules_id` to propose.
     ///
     /// # Errors
@@ -206,33 +197,8 @@ pub trait GovernInternal {
         description: &String,
     ) -> Result<(), GovernError>;
 
-    /// Returs Some(ProposalStatus) of proposal identified by `proposal_id` if it exists. Otherwise None.
-    fn _status_of(&self, proposal_id: &ProposalId) -> Option<ProposalStatus>;
-
-    /// Returns ProposalState of proposal identified by `proposal_id` if it exists. Otherwise None.
-    fn _state_of(&self, proposal_id: &ProposalId) -> Option<ProposalState>;
-
-    /// Returns Some(UserVote) of `account` for `proposal_id` if `account has voted for the proposal. Otherwise None.
-    fn _vote_of_for(&self, account: &AccountId, proposal_id: &ProposalId) -> Option<UserVote>;
-
     /// Returns the amount of `account` votes held at `timestamp`.
     fn _get_votes_at(&self, account: &AccountId, timestamp: &Timestamp) -> Balance;
-
-    /// Updates (Casts or casts again) vote of `account` for `proposal_id` with `vote` and `amount`
-    ///
-    /// On Success emits `VoteCasted` event.
-    ///
-    /// # Errors
-    /// Returns `ZeroVotes` if `caller` has no votes.
-    /// Returns `ProposalDoesntExist` if there is no proposal identified by `proposal_id`/
-    /// Returns `NotActive` if proposal identified by `proposal_id` isnt Active.
-    fn _update_vote_of_for(
-        &mut self,
-        account: &AccountId,
-        proposal_id: &ProposalId,
-        vote: &Vote,
-        amount: &Balance,
-    ) -> Result<(), GovernError>;
 
     /// Returns the minimal amount of votes to finalize proposal with `state` that uses `rules` at time `now`.    
     fn _minimum_to_finalize(&self, state: &ProposalState, rules: &ProposalRules, now: Timestamp) -> Balance;
@@ -257,24 +223,6 @@ pub trait GovernInternal {
     /// Returns `WronfStatus` if proposal identified by `proposal_id` has different than Succeeded status.
     /// Returns `UnderlyingTransactionReverted` if any of Transactions from the `proposal` fails.
     fn _execute(&mut self, proposal_id: &ProposalId, proposal: &Proposal) -> Result<(), GovernError>;
-
-    /// Adds new ProposalRules under `next_rules_id`
-    ///
-    /// On Success emits `ProposalRulesChanged` event.
-    ///
-    /// # Errors
-    ///
-    /// Returns `WrongParameters` if proposer_slash_part_e12 or voter_slash_part_e12 > E12.
-    fn _add_new_rule(&mut self, rules: &ProposalRules) -> Result<(), GovernError>;
-
-    /// Allow/Disallow to use `rules` identified by `rules_id`.
-    ///
-    /// On Success emits `RulesAllowed` event.
-    ///
-    /// #Errors
-    ///
-    /// Returns `NoSuchRule` if there in no rule identified by `rules_id`.
-    fn _allow_rules(&mut self, rules_id: &RulesId, allow: &bool) -> Result<(), GovernError>;
 }
 
 pub trait GovernRewardableSlashableInternal {

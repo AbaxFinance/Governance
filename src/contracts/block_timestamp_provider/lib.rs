@@ -4,7 +4,6 @@
 #[openbrush::contract]
 pub mod block_timestamp_provider {
     use abax_governance::contracts_impls::timestamp_mock::traits::*;
-    use ink::env::debug_println;
     use openbrush::{
         contracts::ownable::{
             OwnableError,

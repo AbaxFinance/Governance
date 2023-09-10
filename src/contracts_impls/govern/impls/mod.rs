@@ -14,9 +14,7 @@ use crate::contracts_impls::{
         traits::{
             EmitStakeEvents,
             MathError,
-            StakeCounterInternal,
             StakeInternal,
-            StakeTimesInternal,
         },
     },
     timestamp_mock::impls::{
@@ -71,34 +69,39 @@ impl<T: Storage<GovernStorage> + GovernInternal + Storage<TimestampMockStorage>>
     }
 
     fn rules(&self, rules_id: RulesId) -> Option<ProposalRules> {
-        self._rule(&rules_id)
+        self.data::<GovernStorage>().rule(&rules_id)
     }
 
     fn rules_allowed(&self, rules_id: RulesId) -> bool {
-        self._rule_allowed(&rules_id)
+        self.data::<GovernStorage>().rule_allowed(&rules_id)
     }
 
     fn next_rule_id(&self) -> RulesId {
-        self._next_rule_id()
+        self.data::<GovernStorage>().next_rule_id()
     }
 
     fn status(&self, proposal_id: ProposalId) -> Option<ProposalStatus> {
-        self._status_of(&proposal_id)
+        self.data::<GovernStorage>().status_of(&proposal_id)
     }
-
     fn minimum_to_finalize(&self, proposal_id: ProposalId) -> Result<Balance, GovernError> {
-        let proposal = self._state_of(&proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
-        let rules = self._rule(&proposal.rules_id).ok_or(GovernError::NoSuchRule)?;
+        let proposal = self
+            .data::<GovernStorage>()
+            .state_of(&proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
+        let rules = self
+            .data::<GovernStorage>()
+            .rule(&proposal.rules_id)
+            .ok_or(GovernError::NoSuchRule)?;
         let timestamp = self._timestamp();
         Ok(self._minimum_to_finalize(&proposal, &rules, timestamp))
     }
 
     fn state(&self, proposal_id: ProposalId) -> Option<ProposalState> {
-        self._state_of(&proposal_id)
+        self.data::<GovernStorage>().state_of(&proposal_id)
     }
 
     fn vote_of_for(&self, account: AccountId, proposal_id: ProposalId) -> Option<UserVote> {
-        self._vote_of_for(&account, &proposal_id)
+        self.data::<GovernStorage>().vote_of_for(&account, &proposal_id)
     }
 }
 
@@ -108,9 +111,7 @@ impl<
             + Storage<StakeStorage>
             + StakeInternal
             + Storage<StakeTimesStorage>
-            + StakeTimesInternal
             + Storage<StakeCounterStorage>
-            + StakeCounterInternal
             + Storage<TimestampMockStorage>
             + TimestampMockInternal
             + EmitStakeEvents
@@ -158,13 +159,18 @@ impl<
     ) -> Result<(), GovernError> {
         ink::env::debug_println!("vote | START");
         let caller = Self::env().caller();
-        let state = self._state_of(&proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
+        let state = self
+            .data::<GovernStorage>()
+            .state_of(&proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
         ink::env::debug_println!("vote | pull data");
 
         let amount = self
             .data::<StakeStorage>()
             .stake_and_unstakes_initialized_after(&caller, &state.start);
-        self._update_vote_of_for(&caller, &proposal_id, &vote, &amount)?;
+        self.data::<GovernStorage>()
+            .update_vote_of_for(&caller, &proposal_id, &vote, &amount)?;
+        self._emit_vote_casted_event(&caller, &proposal_id, &vote);
         ink::env::debug_println!("vote | STOP");
 
         Ok(())
@@ -179,9 +185,7 @@ impl<
             + Storage<StakeStorage>
             + StakeInternal
             + Storage<StakeTimesStorage>
-            + StakeTimesInternal
             + Storage<StakeCounterStorage>
-            + StakeCounterInternal
             + Storage<TimestampMockStorage>
             + TimestampMockInternal
             + EmitStakeEvents
@@ -235,7 +239,8 @@ impl<T: Storage<GovernStorage> + Storage<openbrush::contracts::ownable::Data> + 
     /// `next_rule_id` increased by 1.
     #[modifiers(only_owner())]
     fn add_proposal_rules(&mut self, rules: ProposalRules) -> Result<(), GovernError> {
-        self._add_new_rule(&rules)?;
+        let at_rule_id = self.data::<GovernStorage>().add_new_rule(&rules)?;
+        self._emit_proposal_rule_added_event(&at_rule_id, &rules);
         Ok(())
     }
     /// # Storage modifications
@@ -243,7 +248,9 @@ impl<T: Storage<GovernStorage> + Storage<openbrush::contracts::ownable::Data> + 
     /// `rules_allowed` of key `rule_id` set to () if `allow` is true or else removed.
     #[modifiers(only_owner())]
     fn allow_rules(&mut self, rules_id: RulesId, allow: bool) -> Result<(), GovernError> {
-        self._allow_rules(&rules_id, &allow)
+        self.data::<GovernStorage>().allow_rules(&rules_id, &allow)?;
+        self._emit_rules_allowed_event(&rules_id, &allow);
+        Ok(())
     }
 }
 
@@ -252,9 +259,7 @@ impl<
             + Storage<StakeStorage>
             + StakeInternal
             + Storage<StakeTimesStorage>
-            + StakeTimesInternal
             + Storage<StakeCounterStorage>
-            + StakeCounterInternal
             + Storage<TimestampMockStorage>
             + TimestampMockInternal
             + EmitStakeEvents
@@ -269,28 +274,14 @@ impl<
 
         Hash::try_from(Self::env().hash_bytes::<Blake2x256>(&hash_data).as_ref()).unwrap()
     }
-
-    fn _rule(&self, rules_id: &RulesId) -> Option<ProposalRules> {
-        self.data::<GovernStorage>().rules.get(&rules_id)
-    }
-
-    fn _rule_allowed(&self, rules_id: &RulesId) -> bool {
-        if self.data::<GovernStorage>().allowed_rules.get(&rules_id).is_some() {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    fn _next_rule_id(&self) -> RulesId {
-        self.data::<GovernStorage>().next_rule_id
-    }
-
     fn _check_rules(&self, proposal: &Proposal) -> Result<(), GovernError> {
-        if !self._rule_allowed(&proposal.rules_id) {
+        if !self.data::<GovernStorage>().rule_allowed(&proposal.rules_id) {
             return Err(GovernError::RuleNotAllowed)
         }
-        let rules = self._rule(&proposal.rules_id).ok_or(GovernError::NoSuchRule)?;
+        let rules = self
+            .data::<GovernStorage>()
+            .rule(&proposal.rules_id)
+            .ok_or(GovernError::NoSuchRule)?;
 
         if Self::env().transferred_value() < rules.deposit {
             return Err(GovernError::PropositionDeposit)
@@ -309,12 +300,6 @@ impl<
             return Err(GovernError::InnsuficientVotes)
         }
 
-        ink::env::debug_println!("proposer_part_e12: {}", proposer_part_e12);
-        ink::env::debug_println!(" proposal.voter_reward_part_e12: {}", proposal.voter_reward_part_e12);
-        ink::env::debug_println!(
-            " rules.maximal_voter_reward_part_e12: {}",
-            rules.maximal_voter_reward_part_e12
-        );
         if proposal.voter_reward_part_e12 > rules.maximal_voter_reward_part_e12
             || proposal.voter_reward_part_e12 > proposer_part_e12 / 2
         {
@@ -332,12 +317,12 @@ impl<
         proposal: &Proposal,
         description: &String,
     ) -> Result<(), GovernError> {
-        if self._status_of(&proposal_id).is_some() {
+        if self.data::<GovernStorage>().status_of(&proposal_id).is_some() {
             return Err(GovernError::ProposalAlreadyExists)
         }
 
         let timestamp = self._timestamp();
-        let counter_at_start = self._counter_stake();
+        let counter_at_start = self.data::<StakeCounterStorage>().counter_stake;
         let votes_at_start = self.data::<StakeStorage>().total_stake;
         let caller = Self::env().caller();
         self.data::<GovernStorage>().state.insert(
@@ -363,121 +348,9 @@ impl<
         Ok(())
     }
 
-    fn _status_of(&self, proposal_id: &ProposalId) -> Option<ProposalStatus> {
-        match self.data::<GovernStorage>().state.get(proposal_id) {
-            Some(state) => Some(state.status),
-            None => None,
-        }
-    }
-
-    fn _state_of(&self, proposal_id: &ProposalId) -> Option<ProposalState> {
-        self.data::<GovernStorage>().state.get(proposal_id)
-    }
-
-    fn _vote_of_for(&self, account: &AccountId, proposal_id: &ProposalId) -> Option<UserVote> {
-        self.data::<GovernStorage>().votes.get(&(*account, *proposal_id))
-    }
-
     fn _get_votes_at(&self, account: &AccountId, timestamp: &Timestamp) -> Balance {
         self.data::<StakeStorage>()
             .stake_and_unstakes_initialized_after(account, timestamp)
-    }
-
-    /// # Storage modifications
-    /// [GovernStorage]
-    /// `state` of key `proposal_id` updated based on `vote` and `amount`.
-    /// `votes` of key `account` set to UserVote { `vote`, `amount`}.
-    fn _update_vote_of_for(
-        &mut self,
-        account: &AccountId,
-        proposal_id: &ProposalId,
-        vote: &Vote,
-        amount: &Balance,
-    ) -> Result<(), GovernError> {
-        if *amount == 0 {
-            return Err(GovernError::ZeroVotes)
-        }
-        let mut state = self._state_of(&proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
-        if state.status != ProposalStatus::Active {
-            return Err(GovernError::NotActive)
-        }
-
-        let user_vote = self._vote_of_for(account, &proposal_id);
-        match user_vote {
-            None => {
-                match vote {
-                    Vote::Agreed => state.votes_for += *amount,
-                    Vote::Disagreed => state.votes_against += *amount,
-                    Vote::DisagreedWithProposerSlashing => state.votes_against_with_slash += *amount,
-                }
-            }
-            Some(old_vote) => {
-                match old_vote.vote {
-                    Vote::Agreed => {
-                        match vote {
-                            Vote::Agreed => {
-                                state.votes_for -= old_vote.amount;
-                                state.votes_for += *amount;
-                            }
-                            Vote::Disagreed => {
-                                state.votes_for -= old_vote.amount;
-                                state.votes_against += *amount;
-                            }
-                            Vote::DisagreedWithProposerSlashing => {
-                                state.votes_for -= old_vote.amount;
-                                state.votes_against_with_slash += *amount;
-                            }
-                        }
-                    }
-                    Vote::Disagreed => {
-                        match vote {
-                            Vote::Agreed => {
-                                state.votes_against -= old_vote.amount;
-                                state.votes_for += *amount;
-                            }
-                            Vote::Disagreed => {
-                                state.votes_against -= old_vote.amount;
-                                state.votes_against += *amount;
-                            }
-                            Vote::DisagreedWithProposerSlashing => {
-                                state.votes_against -= old_vote.amount;
-                                state.votes_against_with_slash += *amount;
-                            }
-                        }
-                    }
-                    Vote::DisagreedWithProposerSlashing => {
-                        match vote {
-                            Vote::Agreed => {
-                                state.votes_against_with_slash -= old_vote.amount;
-                                state.votes_for += *amount;
-                            }
-                            Vote::Disagreed => {
-                                state.votes_against_with_slash -= old_vote.amount;
-                                state.votes_against += *amount;
-                            }
-                            Vote::DisagreedWithProposerSlashing => {
-                                state.votes_against_with_slash -= old_vote.amount;
-                                state.votes_against_with_slash += *amount;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        let new_vote = UserVote {
-            vote: *vote,
-            amount: *amount,
-        };
-
-        self.data::<GovernStorage>()
-            .votes
-            .insert(&(*account, *proposal_id), &new_vote);
-
-        self.data::<GovernStorage>().state.insert(proposal_id, &state);
-
-        self._emit_vote_casted_event(account, &proposal_id, &vote);
-        Ok(())
     }
 
     fn _minimum_to_finalize(&self, state: &ProposalState, rules: &ProposalRules, now: Timestamp) -> Balance {
@@ -485,7 +358,7 @@ impl<
         let end_flat_period = end_initial_period + rules.flat_period;
         let end_final_period = end_flat_period + rules.final_period;
 
-        let counter_diff = self._counter_stake() - state.counter_at_start;
+        let counter_diff = self.data::<StakeCounterStorage>().counter_stake - state.counter_at_start;
         let total_votes = counter_diff + state.votes_at_start;
 
         if now <= end_initial_period {
@@ -507,13 +380,19 @@ impl<
     /// [GovernStorage]
     /// `state` of key `proposal_id` field status set to apropariate status, field finalized set to `block_timestamp`.
     fn _finalize(&mut self, proposal_id: &ProposalId) -> Result<(), GovernError> {
-        let mut state = self._state_of(&proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
+        let mut state = self
+            .data::<GovernStorage>()
+            .state_of(&proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
 
         if state.status != ProposalStatus::Active {
             return Err(GovernError::NotActive)
         }
 
-        let rules = self._rule(&state.rules_id).ok_or(GovernError::NoSuchRule)?;
+        let rules = self
+            .data::<GovernStorage>()
+            .rule(&state.rules_id)
+            .ok_or(GovernError::NoSuchRule)?;
 
         let minimum_to_finalize = self._minimum_to_finalize(&state, &rules, self._timestamp());
 
@@ -558,7 +437,10 @@ impl<
     /// [GovernStorage]
     /// `state` of key `proposal_id` status set to Executed
     fn _execute(&mut self, proposal_id: &ProposalId, proposal: &Proposal) -> Result<(), GovernError> {
-        let mut state = self._state_of(&proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
+        let mut state = self
+            .data::<GovernStorage>()
+            .state_of(&proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
         if state.status != ProposalStatus::Succeeded {
             return Err(GovernError::WrongStatus)
         }
@@ -587,45 +469,6 @@ impl<
         self._emit_proposal_executed_event(&proposal_id);
         Ok(())
     }
-
-    /// # Storage modifications
-    /// [GovernStorage]
-    /// `rules` of key `next_rule_id` set to `rules`
-    /// `next_rule_id` increased by 1.
-    fn _add_new_rule(&mut self, rules: &ProposalRules) -> Result<(), GovernError> {
-        if rules.proposer_slash_part_e12 as u128 > E12 || rules.voter_slash_part_e12 as u128 > E12 {
-            return Err(GovernError::WrongParameters)
-        }
-        let next_rule_id = self.data::<GovernStorage>().next_rule_id;
-
-        self.data::<GovernStorage>().rules.insert(&(next_rule_id), rules);
-
-        self.data::<GovernStorage>().next_rule_id = next_rule_id + 1;
-
-        self._emit_proposal_rule_added_event(&next_rule_id, &rules);
-        Ok(())
-    }
-
-    /// # Storage modifications
-    /// [GovernStorage]
-    /// `rules_allowed` of key `rule_id` set to () if `allow` is true or else removed.
-    fn _allow_rules(&mut self, rules_id: &RulesId, allow: &bool) -> Result<(), GovernError> {
-        if self._rule(&rules_id).is_none() {
-            return Err(GovernError::NoSuchRule)
-        }
-
-        if self._rule_allowed(&rules_id) == *allow {
-            return Ok(())
-        }
-
-        if *allow == true {
-            self.data::<GovernStorage>().allowed_rules.insert(&rules_id, &());
-        } else {
-            self.data::<GovernStorage>().allowed_rules.remove(&rules_id);
-        }
-        self._emit_rules_allowed_event(rules_id, allow);
-        Ok(())
-    }
 }
 
 impl<
@@ -634,9 +477,7 @@ impl<
             + Storage<StakeStorage>
             + StakeInternal
             + Storage<StakeTimesStorage>
-            + StakeTimesInternal
             + Storage<StakeCounterStorage>
-            + StakeCounterInternal
             + Storage<TimestampMockStorage>
             + TimestampMockInternal
             + EmitStakeEvents
@@ -668,14 +509,20 @@ impl<
     /// `stakes_timestamps` of key `account set to `block_timestamp` if None.
     /// `last_stakes_timestamps` of key account set to `block_timestamp`
     fn _reward_voter(&mut self, account: &AccountId, proposal_id: &ProposalId) -> Result<(), GovernError> {
-        let state = self._state_of(proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
+        let state = self
+            .data::<GovernStorage>()
+            .state_of(proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
         if state.status == ProposalStatus::Active {
             return Err(GovernError::StillActive)
         }
         if self._claimed_or_slashed(account, proposal_id) {
             return Err(GovernError::AlreadyClaimedOrSlashed)
         }
-        let vote = self._vote_of_for(account, proposal_id).ok_or(GovernError::DidntVote)?;
+        let vote = self
+            .data::<GovernStorage>()
+            .vote_of_for(account, proposal_id)
+            .ok_or(GovernError::DidntVote)?;
 
         let reward = vote
             .amount
@@ -703,16 +550,24 @@ impl<
     /// `stakes_timestamps` of key `account` removed if `stakes` of key `account` was removed.
     /// `last_stakes_timestamps` oof key `account` removed if `stakes` of key `account` was removed.
     fn _slash_voter(&mut self, account: &AccountId, proposal_id: &ProposalId) -> Result<(), GovernError> {
-        let state = self._state_of(proposal_id).ok_or(GovernError::ProposalDoesntExist)?;
+        let state = self
+            .data::<GovernStorage>()
+            .state_of(proposal_id)
+            .ok_or(GovernError::ProposalDoesntExist)?;
         if state.status == ProposalStatus::Active {
             return Err(GovernError::StillActive)
         }
-        let rules = self._rule(&state.rules_id).ok_or(GovernError::NoSuchRule)?;
+        let rules = self
+            .data::<GovernStorage>()
+            .rule(&state.rules_id)
+            .ok_or(GovernError::NoSuchRule)?;
         if state.finalized.unwrap() <= state.start + rules.initial_period + rules.flat_period {
             return Err(GovernError::NothingToSlash)
         }
-        if self._stake_timestamp_of(&account).is_some() {
-            if self._stake_timestamp_of(account).unwrap() > state.finalized.unwrap() - 24 * 60 * 60 * 1000 {
+        if self.data::<StakeTimesStorage>().stake_timestamp_of(&account).is_some() {
+            if self.data::<StakeTimesStorage>().stake_timestamp_of(account).unwrap()
+                > state.finalized.unwrap() - 24 * 60 * 60 * 1000
+            {
                 return Err(GovernError::NothingToSlash)
             }
         }
@@ -720,7 +575,7 @@ impl<
         if self._claimed_or_slashed(account, proposal_id) {
             return Err(GovernError::AlreadyClaimedOrSlashed)
         };
-        if self._vote_of_for(account, proposal_id).is_some() {
+        if self.data::<GovernStorage>().vote_of_for(account, proposal_id).is_some() {
             return Err(GovernError::Voted)
         };
 

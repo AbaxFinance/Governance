@@ -31,6 +31,12 @@ makeSuite('Stake tests', (getTestEnv) => {
     psp22Mintable = testEnv.psp22Mintable;
     timestmpProvider = testEnv.timestampProvider;
   });
+  describe('Staker was constructed with', () => {
+    it.only(`right owner`, async () => {
+      const owner = (await staker.query.owner()).value.ok;
+      expect(owner).to.equal(deployer);
+    });
+  });
   describe(`Stake : user0 `, () => {
     it(`tries to stake 0`, async () => {
       await stakeAndCheck(testEnv, users[0], new BN(0), StakeErrorBuilder.AmountIsZero());

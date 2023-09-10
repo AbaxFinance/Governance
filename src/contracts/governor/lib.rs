@@ -95,8 +95,8 @@ pub mod governor {
             _instance
                 .stake
                 .change_maximal_number_of_unstakes(&maximal_number_of_unstakes);
-            _instance._add_new_rule(&rules).expect("add_new_rule");
-            _instance._allow_rules(&0, &true).expect("allow_rule");
+            _instance.gov.add_new_rule(&rules).expect("add_new_rule");
+            _instance.gov.allow_rules(&0, &true).expect("allow_rule");
             _instance
         }
 

@@ -9,9 +9,8 @@ use openbrush::{
 
 use crate::contracts_impls::stake::traits::*;
 
-pub const STORAGE_KEY: u32 = openbrush::storage_unique_key!(StakeStorage);
 #[derive(Debug)]
-#[openbrush::upgradeable_storage(STORAGE_KEY)]
+#[openbrush::storage_item]
 pub struct StakeStorage {
     // immuatables
     pub want: AccountId,
@@ -205,17 +204,47 @@ impl StakeStorage {
     }
 }
 
-pub const STORAGE_KEY1: u32 = openbrush::storage_unique_key!(StakeTimesStorage);
 #[derive(Debug, Default)]
-#[openbrush::upgradeable_storage(STORAGE_KEY1)]
+#[openbrush::storage_item]
 pub struct StakeTimesStorage {
     pub stakes_timestamps: Mapping<AccountId, Timestamp>,
     pub last_stakes_timestamps: Mapping<AccountId, Timestamp>,
 }
 
+impl StakeTimesStorage {
+    pub fn stake_timestamp_of(&self, account: &AccountId) -> Option<Timestamp> {
+        self.stakes_timestamps.get(account)
+    }
+
+    pub fn last_stake_timestamp_of(&self, account: &AccountId) -> Option<Timestamp> {
+        self.last_stakes_timestamps.get(account)
+    }
+
+    pub fn update_stake_timestamps_of(&mut self, account: &AccountId, timestamp: &Timestamp) {
+        if self.stake_timestamp_of(account).is_none() {
+            self.stakes_timestamps.insert(account, &timestamp);
+        }
+        self.last_stakes_timestamps.insert(account, &timestamp);
+    }
+
+    pub fn remove_stake_timestamps_of(&mut self, account: &AccountId) {
+        self.stakes_timestamps.remove(account);
+        self.last_stakes_timestamps.remove(account);
+    }
+}
+
 pub const STORAGE_KEY2: u32 = openbrush::storage_unique_key!(StakeCounterStorage);
 #[derive(Debug, Default)]
-#[openbrush::upgradeable_storage(STORAGE_KEY2)]
+#[openbrush::storage_item]
 pub struct StakeCounterStorage {
     pub counter_stake: Balance,
+}
+
+impl StakeCounterStorage {
+    pub fn increase_counter(&mut self, amount: &Balance) {
+        // allow overflows
+        let new_counter_stake = self.counter_stake.overflowing_add(*amount);
+
+        self.counter_stake = new_counter_stake.0;
+    }
 }

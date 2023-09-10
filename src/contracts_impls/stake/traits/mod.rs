@@ -18,7 +18,7 @@ pub use ink::prelude::{
     vec::*,
 };
 
-#[openbrush::trait_definition]
+#[ink::trait_definition]
 pub trait StakeView {
     /// Retruns the AccountId of an asset (by default PSP22) that can be staked
     #[ink(message)]
@@ -52,7 +52,7 @@ pub trait StakeView {
     #[ink(message)]
     fn initialized_unstakes_of(&self, account: AccountId) -> Vec<Unstake>;
 }
-#[openbrush::trait_definition]
+#[ink::trait_definition]
 pub trait Stake {
     /// Stakes `amount` of `want` asset (can be PSP22) by transfering it from `caller` to self.
     ///
@@ -85,26 +85,7 @@ pub trait Stake {
     #[ink(message)]
     fn unstake(&mut self) -> Result<Balance, StakeError>;
 }
-
-#[openbrush::trait_definition]
-pub trait StakeTimes {
-    /// Returns the Timestamp of first stake (or first after last unstake).
-    #[ink(message)]
-    fn stake_timestamp_of(&self, account: AccountId) -> Option<Timestamp>;
-
-    /// Returns the Timestamp of last stake (or last after last unstake).
-    #[ink(message)]
-    fn last_stake_timestamp_of(&self, account: AccountId) -> Option<Timestamp>;
-}
-
-#[openbrush::trait_definition]
-pub trait StakeCounter {
-    /// Returns sum of all stakes ever done. May overflow.
-    #[ink(message)]
-    fn counter_stake(&self) -> Balance;
-}
-
-#[openbrush::trait_definition]
+#[ink::trait_definition]
 pub trait StakeManage {
     /// Changes the `unstaking_period`
     ///
@@ -127,7 +108,25 @@ pub trait StakeManage {
     fn change_maximal_number_of_unstakes(&mut self, maximal_number_of_unstakes: u64) -> Result<(), StakeError>;
 }
 
-#[openbrush::trait_definition]
+#[ink::trait_definition]
+pub trait StakeTimes {
+    /// Returns the Timestamp of first stake (or first after last unstake).
+    #[ink(message)]
+    fn stake_timestamp_of(&self, account: AccountId) -> Option<Timestamp>;
+
+    /// Returns the Timestamp of last stake (or last after last unstake).
+    #[ink(message)]
+    fn last_stake_timestamp_of(&self, account: AccountId) -> Option<Timestamp>;
+}
+
+#[ink::trait_definition]
+pub trait StakeCounter {
+    /// Returns sum of all stakes ever done. May overflow.
+    #[ink(message)]
+    fn counter_stake(&self) -> Balance;
+}
+
+#[ink::trait_definition]
 pub trait StakeRewardable {
     /// Rewards `account` by increasing it's stake by `amount`.
     ///
@@ -140,7 +139,7 @@ pub trait StakeRewardable {
     fn reward(&mut self, account: AccountId, amount: Balance) -> Result<(), StakeError>;
 }
 
-#[openbrush::trait_definition]
+#[ink::trait_definition]
 pub trait StakeSlashable {
     /// Slashes the stake of `account` by `amount`.
     /// If not enough stake it will slash initialized unstakes
@@ -181,26 +180,4 @@ pub trait StakeInternal {
     /// # Errors
     /// Returns `AmountIsZero` if `amount is 0.
     fn _slash(&mut self, account: &AccountId, amount: &Balance) -> Result<Balance, StakeError>;
-}
-
-pub trait StakeTimesInternal {
-    /// Returns the Timestamp of first stake. If `account` stake is 0 then returns None.
-    fn _stake_timestamp_of(&self, account: &AccountId) -> Option<Timestamp>;
-
-    /// Returns the Timestamp of last stake. If `account` stake is 0 then returns None.
-    fn _last_stake_timestamp_of(&self, account: &AccountId) -> Option<Timestamp>;
-
-    /// Set `stake_timestamp` and 'last_stake_timestamp' of key `account` to `block_timestamp`.
-    fn _update_stake_timestamps_of(&mut self, account: &AccountId);
-
-    /// Removes `stake_timestamp` and 'last_stake_timestamp' of key `account`
-    fn _remove_stake_timestamps_of(&mut self, account: &AccountId);
-}
-
-pub trait StakeCounterInternal {
-    /// Returns sum of all stakes ever done.
-    fn _counter_stake(&self) -> Balance;
-
-    /// Increase the counter, may overflow.
-    fn _increase_counter(&mut self, amount: &Balance);
 }
