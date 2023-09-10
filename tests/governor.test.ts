@@ -242,7 +242,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await finalizeAndCheck(testEnv, users[0], proposalId, ProposalStatus.defeated);
         });
       });
-      describe(`all stakers votes for 'disagreedWithProposerSlashing`, () => {
+      describe(`all stakers vote for 'disagreedWithProposerSlashing'`, () => {
         beforeEach(async () => {
           await voteAndCheck(testEnv, users[0], proposalId, Vote.disagreedWithProposerSlashing);
           await voteAndCheck(testEnv, users[1], proposalId, Vote.disagreedWithProposerSlashing);

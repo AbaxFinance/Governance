@@ -69,7 +69,7 @@ pub trait Stake {
     /// On success emits `InitializedUnstake` event.
     ///
     /// # Errors
-    /// Returns `NothingToUnstake` if `stakes` of key `caller` is 0.
+    /// Returns `InsufficentStake` if `stakes` of key `caller` is 0.
     /// Returns `ToManyUnstakes` if the `account` has already `maximal_number_of_unstakes` initialized.
     #[ink(message)]
     fn initialize_unstake(&mut self, amount: Balance) -> Result<(), StakeError>;

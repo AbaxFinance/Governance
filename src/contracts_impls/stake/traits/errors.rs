@@ -21,7 +21,6 @@ pub enum StakeError {
     NoInitializedUnstakes,
     TooEarly,
     Unstaking,
-    NothingToUnstake,
     ToManyUnstakes,
     StakeIsZero,
     OwnableError(OwnableError),

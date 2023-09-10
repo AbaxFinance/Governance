@@ -4,6 +4,7 @@
 #[openbrush::contract]
 pub mod block_timestamp_provider {
     use abax_governance::contracts_impls::timestamp_mock::traits::*;
+    use ink::env::debug_println;
     use openbrush::{
         contracts::ownable::{
             OwnableError,
@@ -41,9 +42,12 @@ pub mod block_timestamp_provider {
     impl BlockTimestampProviderInterface for BlockTimestampProvider {
         #[ink(message)]
         fn get_block_timestamp(&self) -> u64 {
+            ink::env::debug_println!("should return: {}", self.should_return_mock_value);
             if self.should_return_mock_value {
+                ink::env::debug_println!("returning mocked");
                 return self.mock_timestamp
             }
+            ink::env::debug_println!("returning real block_timestamp");
             return Self::env().block_timestamp()
         }
         #[ink(message)]

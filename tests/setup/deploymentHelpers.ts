@@ -363,14 +363,14 @@ export const deployAndConfigureSystem = async (
   await governor.tx.setTimestampProvider(timestampProvider.address);
   await staker.tx.setTimestampProvider(timestampProvider.address);
 
-  //FOR TESTING PURPOSES
+  //FOR ETHWARSAW TESTING PURPOSES
   const governanceTokenMinter = await deployGovernanceTokenMinter(deployer, govToken.address);
-  await govToken.withSigner(deployer).tx.grantRole(MINTER, governanceTokenMinter.address);
+  // await govToken.withSigner(deployer).tx.grantRole(MINTER, governanceTokenMinter.address);
 
-  await governanceTokenMinter.withSigner(deployer).tx.mint();
-  await govToken.withSigner(deployer).tx.approve(governor.address, '100000');
-  await governor.withSigner(deployer).tx.stake('100000');
-  //FOR TESTING PURPOSES
+  // await governanceTokenMinter.withSigner(deployer).tx.mint();
+  // await govToken.withSigner(deployer).tx.approve(governor.address, '100000');
+  // await governor.withSigner(deployer).tx.stake('100000');
+  //FOR ETHWARSAW TESTING PURPOSES
 
   await govToken.withSigner(deployer).tx.renounceRole(0, deployer.address);
 

@@ -55,6 +55,8 @@ makeSuite('Stake tests', (getTestEnv) => {
         });
 
         it(`stakes all successfully - event is emitted, state of the contract is updated`, async () => {
+          console.log((await testEnv.timestampProvider.query.getBlockTimestamp()).value);
+          console.log(await testEnv.timestampProvider.query.getShouldReturnMockValue());
           await stakeAndCheck(testEnv, users[0], userBalance, undefined);
         });
 
@@ -71,7 +73,7 @@ makeSuite('Stake tests', (getTestEnv) => {
 
   describe(`Initialize Unstake : user0 `, () => {
     it(`tries to initialze unstake but hasn't any stake`, async () => {
-      await initializeUnstakeAndCheck(testEnv, users[0], new BN(1), StakeErrorBuilder.NothingToUnstake());
+      await initializeUnstakeAndCheck(testEnv, users[0], new BN(1), StakeErrorBuilder.InsufficientStake());
     });
     describe(`stakes E6*E12 tokens`, () => {
       const amountStaked = E6.mul(E12);

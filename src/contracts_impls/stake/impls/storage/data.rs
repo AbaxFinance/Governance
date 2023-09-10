@@ -68,8 +68,10 @@ impl StakeStorage {
     }
 
     pub fn decrease_total_stake(&mut self, amount: &Balance) -> Result<(), MathError> {
-        let new_total_unstake = self.total_unstake.checked_sub(*amount).ok_or(MathError::Sub)?;
-        self.total_unstake = new_total_unstake;
+        ink::env::debug_println!("total stake: {}  | amount: {}", self.total_stake, amount);
+        let new_total_stake = self.total_stake.checked_sub(*amount).ok_or(MathError::Sub)?;
+        ink::env::debug_println!("mm");
+        self.total_stake = new_total_stake;
         Ok(())
     }
 
@@ -80,8 +82,8 @@ impl StakeStorage {
     }
 
     pub fn decrease_total_unstake(&mut self, amount: &Balance) -> Result<(), MathError> {
-        let new_total_stake = self.total_stake.checked_sub(*amount).ok_or(MathError::Sub)?;
-        self.total_stake = new_total_stake;
+        let new_total_unstake = self.total_unstake.checked_sub(*amount).ok_or(MathError::Sub)?;
+        self.total_unstake = new_total_unstake;
         Ok(())
     }
 
@@ -106,7 +108,7 @@ impl StakeStorage {
     }
 
     // decrease up to amount from user unstakes
-    // rerutns amount remained to slash.
+    // rerutns amount slashed.
     pub fn decrease_unstakes_of(&mut self, account: &AccountId, amount: &Balance) -> Balance {
         let mut to_slash = *amount;
         let mut unstakes = self.initialized_unstakes_of(account);
@@ -125,14 +127,13 @@ impl StakeStorage {
             }
         }
 
-        self.decrease_total_unstake(&(amount - to_slash));
         if unstakes.len() > 0 {
             self.unstakes.insert(account, &unstakes);
         } else {
             self.unstakes.remove(account);
         }
 
-        to_slash
+        amount - to_slash
     }
 
     pub fn stake_and_unstakes_initialized_after(&self, account: &AccountId, timestamp: &Timestamp) -> Balance {

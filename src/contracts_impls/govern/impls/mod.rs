@@ -3,7 +3,6 @@ pub mod storage;
 use crate::contracts_impls::{
     govern::traits::*,
     stake::{
-        impls,
         impls::{
             storage::data::{
                 StakeCounterStorage,
@@ -67,8 +66,7 @@ impl<'a> scale::Encode for CallInput<'a> {
 pub const E6: u128 = 10 ^ 6;
 
 impl<T: Storage<GovernStorage> + GovernInternal + Storage<TimestampMockStorage>> GovernView for T {
-    fn hash_proposal(&self, proposal: Proposal, description: String) -> Hash {
-        let description_hash = Self::env().hash_bytes::<Blake2x256>(&description.as_bytes());
+    fn hash_proposal(&self, proposal: Proposal, description_hash: [u8; 32]) -> Hash {
         self._hash_proposal(&proposal, &description_hash)
     }
 

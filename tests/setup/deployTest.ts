@@ -7,7 +7,7 @@ import { argvObj } from 'scripts/compile/common';
 (async (args: Record<string, string>) => {
   if (require.main !== module) return;
   const outputJsonFolder = args['path'] ?? process.env.PWD;
-  const shouldUseMockTimestamp = (args['shouldUseMockTimestamp'] === 'true' || args['shouldUseMockTimestamp'] === '1') ?? true;
+  const shouldUseMockTimestamp = true;
   if (!outputJsonFolder) throw 'could not determine path';
   const api = await apiProviderWrapper.getAndWaitForReady();
   const deployPath = path.join(outputJsonFolder, 'tests/setup/deployedContracts.json');

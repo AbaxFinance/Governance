@@ -89,10 +89,15 @@ impl<
     /// [StakeCounterStorage]
     /// `counter` increased by amount.
     fn stake(&mut self, amount: Balance) -> Result<(), StakeError> {
+        if amount == 0 {
+            return Err(StakeError::AmountIsZero)
+        }
         let caller = Self::env().caller();
         self._transfer_in(&caller, &amount)?;
-
+        ink::env::debug_println!("true timestamp: {}", Self::env().block_timestamp());
+        ink::env::debug_println!("mocked timestamp: {}", self._timestamp());
         self._update_stake_timestamps_of(&caller);
+        ink::env::debug_println!("stored: {}", self._last_stake_timestamp_of(&caller).unwrap_or(0));
         ink::env::debug_println!("Staking amount: {}", amount);
         ink::env::debug_println!("Stake before: {}", self.data::<StakeStorage>().stake_of(&caller));
         self.data::<StakeStorage>().increase_stake_of(&caller, &amount)?;
@@ -119,13 +124,13 @@ impl<
         }
         let caller = Self::env().caller();
 
-        self.data::<StakeStorage>().decrease_total_stake(&amount)?;
         let stake_is_zero = self.data::<StakeStorage>().decrease_stake_of(&caller, &amount)?;
+        self.data::<StakeStorage>().decrease_total_stake(&amount)?;
 
         if stake_is_zero {
             self._remove_stake_timestamps_of(&caller);
         }
-        let timestamp = Self::env().block_timestamp();
+        let timestamp = self._timestamp();
         self.data::<StakeStorage>()
             .register_unstake(&caller, &amount, &timestamp)?;
 
@@ -141,7 +146,7 @@ impl<
     fn unstake(&mut self) -> Result<Balance, StakeError> {
         let caller = Self::env().caller();
 
-        let timestamp = Self::env().block_timestamp();
+        let timestamp = self._timestamp();
 
         let amount = self
             .data::<StakeStorage>()
@@ -212,6 +217,9 @@ impl<
     /// [StakeCounterStorage]
     /// `counter` - increased by amount
     fn reward(&mut self, account: AccountId, amount: Balance) -> Result<(), StakeError> {
+        if amount == 0 {
+            return Err(StakeError::AmountIsZero)
+        }
         self._reward(&account, &amount)?;
         Ok(())
     }
@@ -236,6 +244,9 @@ impl<
     /// `stakes_timestamps` of key `caller` removed if `stakes` of key `caller` was removed.
     /// `last_stakes_timestamps` oof key `caller` removed if `stakes` of key `caller` was removed.
     fn slash(&mut self, account: AccountId, amount: Balance) -> Result<Balance, StakeError> {
+        if amount == 0 {
+            return Err(StakeError::AmountIsZero)
+        }
         self._slash(&account, &amount)
     }
 }
@@ -277,29 +288,39 @@ impl<
     /// `stakes_timestamps` of key `caller` removed if `stakes` of key `caller` was removed.
     /// `last_stakes_timestamps` oof key `caller` removed if `stakes` of key `caller` was removed.
     fn _slash(&mut self, account: &AccountId, amount: &Balance) -> Result<Balance, StakeError> {
+        ink::env::debug_println!("amount to slash: {}", amount);
         let stake = self.data::<StakeStorage>().stake_of(&account);
+        ink::env::debug_println!("stake of: {}", stake);
+        ink::env::debug_println!("total stake: {}", self.data::<StakeStorage>().total_stake);
         if stake >= *amount {
-            let stake_is_zero = self.data::<StakeStorage>().decrease_stake_of(&account, &amount)?;
+            let stake_is_zero = self.data::<StakeStorage>().decrease_stake_of(account, amount)?;
+            ink::env::debug_println!("m1");
+            self.data::<StakeStorage>().decrease_total_stake(amount)?;
+            ink::env::debug_println!("m2");
             if stake_is_zero {
                 self._remove_stake_timestamps_of(&account);
             }
             self._emit_slashed_event(&account, &(amount));
             return Ok(*amount)
-        }
-        if stake > 0 {
-            self.data::<StakeStorage>().decrease_stake_of(&account, &stake)?;
-            self._remove_stake_timestamps_of(&account);
-        }
-
-        let amount_not_slashed = self
-            .data::<StakeStorage>()
-            .decrease_unstakes_of(&account, &(amount - stake));
-        if *amount - amount_not_slashed > 0 {
-            self._emit_slashed_event(&account, &(amount - amount_not_slashed));
         } else {
-            return Err(StakeError::StakeIsZero)
+            if stake > 0 {
+                self.data::<StakeStorage>().decrease_stake_of(&account, &stake)?;
+                self.data::<StakeStorage>().decrease_total_stake(&stake)?;
+                self._remove_stake_timestamps_of(&account);
+            }
+            let unstake_amount_slashed = self
+                .data::<StakeStorage>()
+                .decrease_unstakes_of(&account, &(amount - stake));
+            self.data::<StakeStorage>()
+                .decrease_total_unstake(&unstake_amount_slashed)?;
+
+            if unstake_amount_slashed + stake == 0 {
+                return Err(StakeError::StakeIsZero)
+            } else {
+                self._emit_slashed_event(&account, &(unstake_amount_slashed + stake));
+                Ok(unstake_amount_slashed + stake)
+            }
         }
-        Ok(amount - amount_not_slashed)
     }
 }
 

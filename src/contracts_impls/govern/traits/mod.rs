@@ -23,7 +23,7 @@ pub type RulesId = u64;
 pub trait GovernView {
     /// Returns hash of the appened encoded `desription_hash` to the encoded `proposal`.
     #[ink(message)]
-    fn hash_proposal(&self, proposal: Proposal, description: String) -> Hash;
+    fn hash_proposal(&self, proposal: Proposal, description_hash: [u8; 32]) -> Hash;
 
     /// Returns current proposal rules.
     #[ink(message)]
