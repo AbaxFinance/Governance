@@ -67,7 +67,7 @@ export async function voteAndCheck(testEnv: TestEnv, caller: KeyringPair, propos
       start: storageStateBefore.state.start,
       votesAtStart: storageStateBefore.state.votesAtStart,
       counterAtStart: storageStateBefore.state.counterAtStart,
-      finlalized: storageStateBefore.state.finlalized,
+      finalized: storageStateBefore.state.finalized,
       votesFor: new ReturnNumber(
         storageStateBefore.state.votesFor.rawNumber
           .add(vote === Vote.agreed ? stakeOf.rawNumber : new BN(0))

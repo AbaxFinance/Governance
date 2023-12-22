@@ -1,7 +1,12 @@
 use ink::LangError;
-use openbrush::contracts::ownable::OwnableError;
-use openbrush::contracts::psp22::PSP22Error;
-use scale::{Decode, Encode};
+use openbrush::contracts::{
+    ownable::OwnableError,
+    psp22::PSP22Error,
+};
+use scale::{
+    Decode,
+    Encode,
+};
 
 #[derive(Encode, Decode, Debug)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
@@ -10,12 +15,12 @@ pub enum StakeError {
     LangError(LangError),
     MathError(MathError),
     AmountIsZero,
+    AmountGreaterThanStake,
     InsufficientStake,
     UnstakeNotInitialized,
     NoInitializedUnstakes,
-    ToEarly,
+    TooEarly,
     Unstaking,
-    NothingToUnstake,
     ToManyUnstakes,
     StakeIsZero,
     OwnableError(OwnableError),

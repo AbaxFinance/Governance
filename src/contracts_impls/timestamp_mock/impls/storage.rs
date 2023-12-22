@@ -1,10 +1,9 @@
 use openbrush::traits::AccountId;
 
-pub const STORAGE_KEY: u32 = openbrush::storage_unique_key!(TimestampMockStorage);
 #[derive(Debug)]
-#[openbrush::upgradeable_storage(STORAGE_KEY)]
+#[openbrush::storage_item]
 pub struct TimestampMockStorage {
-    //immuatables
+    // immuatables
     pub timestamp_provider: AccountId,
 }
 

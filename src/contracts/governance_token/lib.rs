@@ -3,20 +3,32 @@
 #[openbrush::contract]
 pub mod governance_token {
     // imports from ink!
-    use ink::codegen::{EmitEvent, Env};
+    use ink::codegen::{
+        EmitEvent,
+        Env,
+    };
 
     // imports from openbrush
-    use openbrush::traits::Storage;
-    use openbrush::traits::String;
     use openbrush::{
         contracts::{
-            access_control::{RoleType, *},
+            access_control::{
+                RoleType,
+                *,
+            },
             psp22::{
-                extensions::{burnable::*, metadata::*, mintable::*},
+                extensions::{
+                    burnable::*,
+                    metadata::*,
+                    mintable::*,
+                },
                 PSP22Error,
             },
         },
         modifiers,
+        traits::{
+            Storage,
+            String,
+        },
     };
 
     #[ink(storage)]
@@ -56,12 +68,7 @@ pub mod governance_token {
 
     impl GovernanceToken {
         #[ink(constructor)]
-        pub fn new(
-            initial_supply: Balance,
-            name: Option<String>,
-            symbol: Option<String>,
-            decimal: u8,
-        ) -> Self {
+        pub fn new(initial_supply: Balance, name: Option<String>, symbol: Option<String>, decimal: u8) -> Self {
             let mut _instance = Self::default();
             _instance
                 ._mint_to(_instance.env().caller(), initial_supply)
@@ -93,12 +100,7 @@ pub mod governance_token {
     }
 
     impl psp22::Internal for GovernanceToken {
-        fn _emit_transfer_event(
-            &self,
-            _from: Option<AccountId>,
-            _to: Option<AccountId>,
-            _amount: Balance,
-        ) {
+        fn _emit_transfer_event(&self, _from: Option<AccountId>, _to: Option<AccountId>, _amount: Balance) {
             self.env().emit_event(Transfer {
                 from: _from,
                 to: _to,

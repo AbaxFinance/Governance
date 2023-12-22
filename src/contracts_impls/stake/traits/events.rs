@@ -1,4 +1,8 @@
-use openbrush::traits::{AccountId, Balance, Timestamp};
+use openbrush::traits::{
+    AccountId,
+    Balance,
+    Timestamp,
+};
 
 pub trait EmitStakeEvents {
     fn _emit_staked_event(&self, caller: &AccountId, amount: &Balance);

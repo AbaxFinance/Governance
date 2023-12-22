@@ -41,6 +41,7 @@ export async function stakeAndCheck(testEnv: TestEnv, caller: KeyringPair, amoun
   const storageStateBefore: StakeStorageModifications = await getStakeStorageModifications(staker, caller);
 
   const timestamp = (await timestampProvider.query.getBlockTimestamp()).value.ok!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  console.log(timestamp);
 
   const queryRes = (await staker.withSigner(caller).query.stake(amount)).value.ok;
   if (error !== undefined) {

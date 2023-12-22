@@ -112,7 +112,7 @@ export async function finalizeAndCheck(
       start: storageStateBefore.state.start,
       votesAtStart: storageStateBefore.state.votesAtStart,
       counterAtStart: storageStateBefore.state.counterAtStart,
-      finlalized: timestamp,
+      finalized: timestamp,
       votesFor: storageStateBefore.state.votesFor,
       votesAgainst: storageStateBefore.state.votesAgainst,
       votesAgainstWithSlash: storageStateBefore.state.votesAgainstWithSlash,

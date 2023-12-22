@@ -3,28 +3,49 @@
 #[openbrush::contract]
 pub mod governor {
 
-    use abax_governance::contracts_impls::govern::impls::storage::GovernRewardableSlashableStorage;
-    use abax_governance::contracts_impls::govern::impls::storage::GovernStorage;
-    use abax_governance::contracts_impls::govern::traits::EmitGovernEvents;
-    use abax_governance::contracts_impls::govern::traits::Proposal;
-    use abax_governance::contracts_impls::govern::traits::ProposalRules;
-    use abax_governance::contracts_impls::govern::traits::ProposalStatus;
-    use abax_governance::contracts_impls::govern::traits::RulesId;
-    use abax_governance::contracts_impls::govern::traits::*;
-    use abax_governance::contracts_impls::stake::impls::StakeCounterStorage;
-    use abax_governance::contracts_impls::stake::impls::StakeStorage;
-    use abax_governance::contracts_impls::stake::impls::StakeTimesStorage;
-    use abax_governance::contracts_impls::stake::traits::*;
-    use abax_governance::contracts_impls::timestamp_mock::impls::TimestampMockStorage;
-    use abax_governance::contracts_impls::timestamp_mock::traits::*;
+    use abax_governance::contracts_impls::{
+        govern::{
+            impls::storage::{
+                GovernRewardableSlashableStorage,
+                GovernStorage,
+            },
+            traits::{
+                EmitGovernEvents,
+                Proposal,
+                ProposalRules,
+                ProposalStatus,
+                RulesId,
+                *,
+            },
+        },
+        stake::{
+            impls::storage::data::{
+                StakeCounterStorage,
+                StakeStorage,
+                StakeTimesStorage,
+            },
+            traits::*,
+        },
+        timestamp_mock::{
+            impls::TimestampMockStorage,
+            traits::*,
+        },
+    };
 
     // imports from ink!
-    use ink::codegen::{EmitEvent, Env};
+    use ink::codegen::{
+        EmitEvent,
+        Env,
+    };
 
     // imports from openbrush
-    use openbrush::contracts::ownable::*;
-    use openbrush::traits::Storage;
-    use openbrush::traits::String;
+    use openbrush::{
+        contracts::ownable::*,
+        traits::{
+            Storage,
+            String,
+        },
+    };
 
     #[ink(storage)]
     #[derive(Default, Storage)]
@@ -67,20 +88,35 @@ pub mod governor {
             rules: ProposalRules,
         ) -> Self {
             let mut _instance = Self::default();
-            _instance
-                .ownable
-                ._init_with_owner(_instance.env().account_id());
+            _instance.ownable._init_with_owner(_instance.env().account_id());
 
             _instance.stake.want = want;
+            _instance.stake.change_unstake_period(&unstake_period);
             _instance
-                ._change_unstake_period(&unstake_period)
-                .expect("unstake_period");
+                .stake
+                .change_maximal_number_of_unstakes(&maximal_number_of_unstakes);
+            _instance.gov.add_new_rule(&rules).expect("add_new_rule");
+            _instance.gov.allow_rules(&0, &true).expect("allow_rule");
             _instance
-                ._change_maximal_number_of_unstakes(&maximal_number_of_unstakes)
-                .expect("maximal_number_of_unstakes");
-            _instance._add_new_rule(&rules).expect("add_new_rule");
-            _instance._allow_rules(&0, &true).expect("allow_rule");
-            _instance
+        }
+
+        #[ink(message)]
+        pub fn active_proposals(&self) -> u32 {
+            self.gov.active_proposals
+        }
+
+        #[ink(message)]
+        pub fn finalized_proposals(&self) -> u32 {
+            self.gov.finalized_proposals
+        }
+
+        #[ink(message)]
+        #[openbrush::modifiers(only_owner())]
+        pub fn set_code_hash(&mut self, code_hash: [u8; 32]) -> Result<(), OwnableError> {
+            ink::env::set_code_hash(&code_hash)
+                .unwrap_or_else(|err| panic!("Failed to `set_code_hash` to {:?} due to {:?}", code_hash, err));
+            ink::env::debug_println!("Switched code hash to {:?}.", code_hash);
+            Ok(())
         }
     }
 
@@ -93,11 +129,7 @@ pub mod governor {
     }
 
     impl ownable::Internal for Governor {
-        fn _emit_ownership_transferred_event(
-            &self,
-            previous: Option<AccountId>,
-            new: Option<AccountId>,
-        ) {
+        fn _emit_ownership_transferred_event(&self, previous: Option<AccountId>, new: Option<AccountId>) {
             EmitEvent::<Governor>::emit_event(self.env(), OwnershipTransferred { previous, new })
         }
     }
@@ -269,12 +301,7 @@ pub mod governor {
     }
 
     impl EmitGovernEvents for Governor {
-        fn _emit_proposal_created_event(
-            &self,
-            proposal_id: &ProposalId,
-            proposal: &Proposal,
-            description: &String,
-        ) {
+        fn _emit_proposal_created_event(&self, proposal_id: &ProposalId, proposal: &Proposal, description: &String) {
             EmitEvent::<Governor>::emit_event(
                 self.env(),
                 ProposalCreated {
@@ -284,11 +311,7 @@ pub mod governor {
                 },
             )
         }
-        fn _emit_proposal_finalized_event(
-            &self,
-            proposal_id: &ProposalId,
-            status: &ProposalStatus,
-        ) {
+        fn _emit_proposal_finalized_event(&self, proposal_id: &ProposalId, status: &ProposalStatus) {
             EmitEvent::<Governor>::emit_event(
                 self.env(),
                 ProposalFinalized {
@@ -306,12 +329,7 @@ pub mod governor {
             )
         }
 
-        fn _emit_vote_casted_event(
-            &self,
-            account: &AccountId,
-            proposal_id: &ProposalId,
-            vote: &Vote,
-        ) {
+        fn _emit_vote_casted_event(&self, account: &AccountId, proposal_id: &ProposalId, vote: &Vote) {
             EmitEvent::<Governor>::emit_event(
                 self.env(),
                 VoteCasted {

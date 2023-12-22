@@ -72,7 +72,7 @@ export async function proposeAndCheck(
       start: timestamp,
       votesAtStart: totalStake,
       counterAtStart: counterAtStart,
-      finlalized: null,
+      finalized: null,
       votesFor: new ReturnNumber(0),
       votesAgainst: new ReturnNumber(0),
       votesAgainstWithSlash: new ReturnNumber(0),

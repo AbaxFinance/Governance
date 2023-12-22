@@ -9,7 +9,7 @@
     "localnode": "./substrate-contracts-node --dev --tmp -lerror,runtime::contracts=debug --ws-max-connections 5000 --pruning=archive",
     "test:debug": "npx ts-node runWithoutWarnings.ts env DEBUG=1 npx ts-node scripts/runScenarioWithDebug.ts",
     "test": "./runTests.sh",
-    "generateTypes": "npx ts-node ./runWithoutWarnings.ts npx typechain-polkadot --in artifacts --out typechain && npx ts-node ./scripts/typechain/replaceQueryCalls.ts && npx ts-node ./scripts/typechain/replaceHandleReturnType.ts && npx ts-node ./scripts/typechain/removeReturnTypesRef.ts && npx ts-node ./scripts/typechain/fixContractAbiImport.ts && npx ts-node ./scripts/typechain/generateEventsEnum.ts",
+    "generateTypes": "npx ts-node ./runWithoutWarnings.ts npx typechain-polkadot --in artifacts --out typechain && npx ts-node ./scripts/typechain/replaceQueryCalls.ts && npx ts-node ./scripts/typechain/replaceHandleReturnType.ts && npx ts-node ./scripts/typechain/removeReturnTypesRef.ts && npx ts-node ./scripts/typechain/fixContractAbiImport.ts && npx ts-node ./scripts/typechain/generateEventsEnum.ts && npx ts-node ./scripts/typechain/removeCommas.ts",
     "codeDuplication": "npx jscpd --min-lines 5 --min-tokens 50 --pattern './!(target)/**/*.rs' --reporters html -o jscpd",
     "clippy": "script -efq ./clippy.log -c 'env CARGO_TERM_COLOR=always cargo clippy -- -W clippy::pedantic'",
     "lint": "yarn lint:format && yarn lint:fix",

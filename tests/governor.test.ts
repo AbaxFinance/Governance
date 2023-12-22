@@ -127,7 +127,7 @@ makeSuite('Governor tests', (getTestEnv) => {
         await proposeAndCheck(testEnv, users[0], proposal, description, undefined);
       });
 
-      it('user0 tires to create proposal twice', async () => {
+      it('user0 tires to submit the same proposal twice', async () => {
         const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
@@ -138,7 +138,7 @@ makeSuite('Governor tests', (getTestEnv) => {
         await proposeAndCheck(testEnv, users[0], proposal, description, GovernErrorBuilder.ProposalAlreadyExists());
       });
 
-      it('user1 tires to create proposal after user 0 already created it', async () => {
+      it('user1 tires to submit proposal after user 0 already submitted it', async () => {
         const description = 'Abax will be the best ;-)';
         const proposal: Proposal = {
           rulesId: 0,
@@ -242,7 +242,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await finalizeAndCheck(testEnv, users[0], proposalId, ProposalStatus.defeated);
         });
       });
-      describe(`all stakers votes for 'disagreedWithProposerSlashing`, () => {
+      describe(`all stakers vote for 'disagreedWithProposerSlashing'`, () => {
         beforeEach(async () => {
           await voteAndCheck(testEnv, users[0], proposalId, Vote.disagreedWithProposerSlashing);
           await voteAndCheck(testEnv, users[1], proposalId, Vote.disagreedWithProposerSlashing);
@@ -637,10 +637,10 @@ makeSuite('Governor tests', (getTestEnv) => {
         await proposeAndCheck(testEnv, users[0], proposal, description, undefined);
       });
       it('user0 tries to execute non-existing proposal', async () => {
-        await executeAndCheck(testEnv, users[0], proposal2, descriptionHash, GovernErrorBuilder.ProposalDoesntExist());
+        await executeAndCheck(testEnv, users[0], proposal2, descriptionHash, description, GovernErrorBuilder.ProposalDoesntExist());
       });
       it('user0 tries to execute active proposal', async () => {
-        await executeAndCheck(testEnv, users[0], proposal, descriptionHash, GovernErrorBuilder.WrongStatus());
+        await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description, GovernErrorBuilder.WrongStatus());
       });
       describe(`proposal is finalized with defeated`, () => {
         beforeEach(async () => {
@@ -652,7 +652,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 tries to execute defeated proposal', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, GovernErrorBuilder.WrongStatus());
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description, GovernErrorBuilder.WrongStatus());
         });
       });
       describe(`proposal is finalized with defeatedWithSlash`, () => {
@@ -665,7 +665,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 tries to execute defeatedWithSlash proposal', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, GovernErrorBuilder.WrongStatus());
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description, GovernErrorBuilder.WrongStatus());
         });
       });
       describe(`proposal is finalized with Succeeded`, () => {
@@ -678,7 +678,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 executes Succeded proposal with no Tx', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash);
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description);
         });
       });
     });
@@ -737,7 +737,7 @@ makeSuite('Governor tests', (getTestEnv) => {
           await governor.tx.finalize(proposalId);
         });
         it('user0 executes Succeded proposal with no Tx', async () => {
-          await executeAndCheck(testEnv, users[0], proposal, descriptionHash);
+          await executeAndCheck(testEnv, users[0], proposal, descriptionHash, description);
 
           expect((await govToken.query.allowance(governor.address, users[0].address)).value.ok!.rawNumber.toString()).to.be.equal(E12.toString());
           expect((await govToken.query.allowance(governor.address, users[1].address)).value.ok!.rawNumber.toString()).to.be.equal(
@@ -748,6 +748,28 @@ makeSuite('Governor tests', (getTestEnv) => {
           );
         });
       });
+    });
+  });
+
+  describe.skip('Performance tests', () => {
+    it('Proposal submissions count: Submitted 1200 proposals', async function (this) {
+      console.warn('Warning: slow test');
+      const descriptionTemplate = 'Proposal number:';
+      const proposal: Proposal = {
+        rulesId: 0,
+        voterRewardPartE12: 0,
+        transactions: [],
+      };
+      for (let i = 0; i < 1200; i++) {
+        const description = `${descriptionTemplate}_${i}`;
+        try {
+          if (i % 100 === 0) console.log({ i });
+          const tx = governor.withSigner(users[0]).tx.propose(proposal, description);
+          await expect(tx).to.eventually.be.fulfilled;
+        } catch (e) {
+          expect(e).to.be('undefined', 'Query call failed');
+        }
+      }
     });
   });
 });

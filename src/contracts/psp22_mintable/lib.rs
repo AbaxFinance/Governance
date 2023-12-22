@@ -5,8 +5,10 @@
 pub mod psp22_mintable {
 
     // imports from openbrush
-    use openbrush::contracts::psp22::extensions::mintable::*;
-    use openbrush::traits::Storage;
+    use openbrush::{
+        contracts::psp22::extensions::mintable::*,
+        traits::Storage,
+    };
 
     #[ink(storage)]
     #[derive(Default, Storage)]

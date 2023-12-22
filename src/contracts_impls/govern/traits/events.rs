@@ -1,14 +1,20 @@
-use openbrush::traits::{AccountId, Hash, String};
+use openbrush::traits::{
+    AccountId,
+    Hash,
+    String,
+};
 
-use super::{Proposal, ProposalId, ProposalRules, ProposalStatus, RulesId, Vote};
+use super::{
+    Proposal,
+    ProposalId,
+    ProposalRules,
+    ProposalStatus,
+    RulesId,
+    Vote,
+};
 
 pub trait EmitGovernEvents {
-    fn _emit_proposal_created_event(
-        &self,
-        proposal_id: &ProposalId,
-        proposal: &Proposal,
-        description: &String,
-    );
+    fn _emit_proposal_created_event(&self, proposal_id: &ProposalId, proposal: &Proposal, description: &String);
     fn _emit_proposal_finalized_event(&self, proposal_id: &ProposalId, status: &ProposalStatus);
     fn _emit_proposal_executed_event(&self, proposal_id: &ProposalId);
 

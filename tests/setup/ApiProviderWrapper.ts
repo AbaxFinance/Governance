@@ -3,7 +3,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 export class ApiProviderWrapper {
   private api: ApiPromise | null;
   private wsProvider: WsProvider | null;
-  private webSocketEndpoint: string;
+  private readonly webSocketEndpoint: string;
 
   constructor(webSocketEndpoint: string) {
     this.api = null;
@@ -18,11 +18,13 @@ export class ApiProviderWrapper {
 
     return this.api;
   };
-  getAndWaitForReady = async () => {
-    if (!this.wsProvider) this.wsProvider = new WsProvider(this.webSocketEndpoint);
-    if (!this.api) {
+
+  getAndWaitForReady = async (useCache: boolean = true) => {
+    if (!useCache || !this.wsProvider) this.wsProvider = new WsProvider(this.webSocketEndpoint);
+    if (!useCache || !this.api) {
       this.api = await ApiPromise.create({ provider: this.wsProvider });
     }
+
     await this.api.isReady;
     return this.api;
   };

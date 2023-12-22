@@ -5,28 +5,40 @@ members = [
     "contracts/staker",
     "contracts/block_timestamp_provider",
     "contracts/psp22_mintable",
-    "contracts/hasher"
+    "contracts/hasher",
+    "contracts/governance_token_minter",
 ]
 
 [package]
 name = "abax_governance"
 version = "0.1.0"
-authors = ["Konrad Wierzbik <konrad.wierzbik@gmail.com", "Łukasz Łakomy <wookie.xp.07@gmail.com>"]
+authors = [
+    "Konrad Wierzbik <konrad.wierzbik@gmail.com",
+    "Łukasz Łakomy <wookie.xp.07@gmail.com>",
+]
 edition = "2021"
 
 [dependencies]
-ink = { version = "4.2", default-features = false}
-scale = { package = "parity-scale-codec", version = "3.5.0", default-features = false, features = ["derive"] }
-scale-info = { version = "2.7", default-features = false, features = ["derive"], optional = true }
+ink = { version = "4.2", default-features = false }
+scale = { package = "parity-scale-codec", version = "3.5.0", default-features = false, features = [
+    "derive",
+] }
+scale-info = { version = "2.7", default-features = false, features = [
+    "derive",
+], optional = true }
 
 # These dependencies
-openbrush = { tag = "3.1.1", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = ["psp22", "psp34", "ownable", "pausable", "access_control"] }
+openbrush = { tag = "4.0.0-beta", git = "https://github.com/727-Ventures/openbrush-contracts", default-features = false, features = [
+    "psp22",
+    "psp34",
+    "ownable",
+    "pausable",
+    "access_control",
+] }
 [lib]
 name = "abax_governance"
 path = "lib.rs"
-crate-type = [
-    "rlib"
-]
+crate-type = ["rlib"]
 
 [features]
 default = ["std"]
